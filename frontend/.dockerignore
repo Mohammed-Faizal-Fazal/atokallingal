@@ -1,0 +1,14 @@
+# Keep the Docker build context small & the image lean.
+# Only src/, package*.json, nginx.conf and config files are needed to build.
+node_modules
+dist
+.angular
+.git
+.gitignore
+Dockerfile
+*.log
+
+# Source media masters that the app never serves (compressed copies live in
+# src/assets/video and ARE kept). Listed explicitly so we never exclude those.
+media-originals
+kallingal-hero-original-*.mp4

@@ -1,0 +1,8 @@
+# Maven builds fresh inside the image; never ship local build output or IDE files.
+target
+.idea
+*.iml
+.git
+.gitignore
+Dockerfile
+*.log

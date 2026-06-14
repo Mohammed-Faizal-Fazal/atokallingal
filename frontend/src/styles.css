@@ -1,0 +1,1018 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Kallingal Chrome";
+  src: url("/assets/fonts/sofachrome-rg-it.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Kallingal Libertine";
+  src: url("/assets/fonts/linlibertine_r.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Kallingal Libertine";
+  src: url("/assets/fonts/linlibertine_rb.ttf") format("truetype");
+  font-weight: 700 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Kallingal Libertine";
+  src: url("/assets/fonts/linlibertine_ri.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Kallingal Libertine";
+  src: url("/assets/fonts/linlibertine_rbi.ttf") format("truetype");
+  font-weight: 700 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+:root {
+  --cursor-x: 50vw;
+  --cursor-y: 50vh;
+  --premium-ink: #05161c;
+  --premium-panel: rgba(246,240,229,0.86);
+  --premium-teal: #06a154;
+  --premium-graphite: #11313a;
+  --premium-blue: #1e70ad;
+  --premium-logo-blue: #1e70ad;
+  --premium-cream: #f4f1ea;
+  /* Single source of truth for every filled CTA (navbar "Book a test drive",
+     primary buttons, active nav pill) so they're all identical site-wide. */
+  --cta-sheen: linear-gradient(135deg, rgba(255,255,255,.35), transparent 30%);
+  --cta-gradient: linear-gradient(135deg, #63d99b, #06a154 56%, #1e70ad);
+  --scroll-progress: 0;
+  --font-body: "Plus Jakarta Sans";
+  --font-display: "Sora";
+  --font-editorial: "Kallingal Libertine";
+  --font-chrome: "Kallingal Chrome";
+}
+
+/* Desktop sections keep generous height, but scrolling remains continuous. */
+@media (min-width: 1024px) {
+  html { scroll-padding-top: 4.75rem; }
+  .snap-full { min-height: auto; }
+  .snap-center { display: block; }
+}
+/* anchor jumps clear the fixed navbar on every viewport */
+main section { scroll-margin-top: 4.75rem; }
+
+/* ---------- Typography refinements ---------- */
+@layer base {
+  .font-display {
+    letter-spacing: -0.028em;
+    font-optical-sizing: auto;
+  }
+  /* Premium editorial line-breaking: headlines balance across lines instead
+     of leaving one stray word; body copy avoids single-word orphan lines.
+     Both degrade gracefully where unsupported. */
+  h1, h2, h3, .font-display { text-wrap: balance; }
+  main p { text-wrap: pretty; }
+}
+.hero-title,
+.brand-word {
+  font-family: var(--font-chrome), "Sora", sans-serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.012em;
+  line-height: 1.08;
+  overflow: visible;
+}
+.hero-title {
+  padding: .14em .18em .2em;
+  margin: -.14em -.18em -.2em;
+  text-shadow: 0 26px 84px rgba(6,161,84,0.22), 0 2px 0 rgba(255,255,255,0.08);
+}
+.hero-word {
+  display: block;
+  overflow: visible;
+  padding: .08em .16em .16em;
+  margin: -.08em -.16em -.16em;
+}
+.brand-word {
+  display: inline-flex;
+  align-items: center;
+  padding: .16em .2em .22em;
+  margin: -.16em -.08em -.22em;
+}
+main h1.font-display:not(.hero-title),
+main h2.font-display,
+.ph-title,
+.prod-h2,
+.prod-name,
+.story-copy h2,
+.journey-intro h2,
+.film-title,
+.reel-title {
+  font-family: var(--font-editorial), Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.018em;
+}
+.eyebrow { letter-spacing: 0.22em; }
+.metric-pill { letter-spacing: 0.05em; }
+.counter { font-variant-numeric: tabular-nums; }
+::selection { background: rgba(6,161,84,0.34); color: #f4f1ea; }
+
+/* ============================================================
+   Global modern background — premium cool-grey with soft
+   brand glows + a faint grain. Fixed so it stays put while
+   content scrolls. Inner pages render directly on top of this,
+   so white cards lift cleanly off the grey.
+   ============================================================ */
+body {
+  @apply font-body text-ink antialiased;
+  background-color: #05161c;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+}
+/* Premium brand scrollbar — slim, teal→graphite thumb on the deep ink track,
+   so the chrome matches the dark video world instead of the OS default. */
+html { scrollbar-color: #06a154 #05161c; scrollbar-width: thin; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: #05161c; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #06a154, #11313a);
+  border-radius: 999px;
+  border: 3px solid #05161c;
+}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #2fb98f, #06a154); }
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+  /* Base is now semi-transparent so the fixed background video (z-index -6)
+     reads through it, tinted in brand colour. The radial glows stay. */
+  background:
+    linear-gradient(165deg, rgba(4,12,14,0.68) 0%, rgba(5,18,18,0.52) 48%, rgba(3,8,11,0.72) 100%),
+    radial-gradient(920px 560px at 14% -4%, rgba(6,161,84,0.12), transparent 66%),
+    radial-gradient(1000px 620px at 88% 8%, rgba(30,112,173,0.08), transparent 64%),
+    radial-gradient(760px 500px at 54% 105%, rgba(30,112,173,0.08), transparent 70%);
+}
+/* Fixed full-page background video (kallingal_background.mp4). Sits behind every
+   layer; the dark body colour shows through its lowered opacity, deepening it so
+   it never competes with content. One fixed element → continuous across the whole
+   site with no "page break". Playback is started in AppComponent (desktop only;
+   phones show the poster frame to keep scrolling smooth). */
+.bg-video {
+  position: fixed;
+  inset: 0;
+  z-index: -6;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  opacity: 0.82;
+  filter: brightness(0.58) saturate(1.04) contrast(1.08);
+}
+@media (max-width: 767px) {
+  .bg-video {
+    opacity: 0.72;
+    filter: brightness(0.52) saturate(1.02) contrast(1.08);
+  }
+}
+/* Scroll-driven bold colour layer — its big brand glows are re-tinted live
+   as you scroll the page (see AppComponent). Sits over the light base so the
+   page reads colourful + alive while text stays legible. */
+.scroll-bg {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  opacity: .74;
+  background:
+    radial-gradient(1100px 700px at 6% -8%, rgba(6,161,84,0.11), transparent 60%),
+    radial-gradient(980px 720px at 100% 4%, rgba(30,112,173,0.08), transparent 58%),
+    radial-gradient(900px 760px at 50% 116%, rgba(30,112,173,0.08), transparent 62%);
+}
+.scroll-progress {
+  position: fixed;
+  right: clamp(.7rem, 1.4vw, 1.25rem);
+  top: 6rem;
+  bottom: 6rem;
+  z-index: 42;
+  width: 3px;
+  pointer-events: none;
+  border-radius: 999px;
+  background: rgba(244,241,234,0.09);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+}
+.scroll-progress span {
+  display: block;
+  height: 100%;
+  transform: scaleY(var(--scroll-progress));
+  transform-origin: top;
+  border-radius: inherit;
+  background: linear-gradient(180deg, #63d99b, #1e70ad 58%, #1e70ad);
+  box-shadow: 0 0 22px rgba(6,161,84,0.32);
+}
+body.is-admin .bg-video,
+body.is-admin .scroll-progress,
+body.is-admin app-whatsapp-fab { display: none; }
+.cursor-aura {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  width: 34rem;
+  height: 34rem;
+  pointer-events: none;
+  transform: translate3d(calc(var(--cursor-x) - 50%), calc(var(--cursor-y) - 50%), 0);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at center, rgba(6,161,84,0.15), rgba(30,112,173,0.05) 34%, transparent 68%);
+  mix-blend-mode: screen;
+  opacity: 0.12;
+  transition: transform 0.18s ease-out, opacity 0.25s ease;
+}
+body.is-admin .cursor-aura { display: none; }
+@media (max-width: 1023px) {
+  .cursor-aura { display: none; }
+  .scroll-progress {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cursor-aura { display: none; }
+  .route-wipe { display: none; }
+}
+/* faint film-grain texture so the grey reads as a designed surface, not flat fill */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.16;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+}
+main {
+  min-height: 70vh;
+  position: relative;
+  counter-reset: premium-section;
+}
+.route-wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(0, 100%, 0);
+  background:
+    radial-gradient(900px 460px at 18% 18%, rgba(6,161,84,.18), transparent 62%),
+    radial-gradient(760px 430px at 82% 74%, rgba(30,112,173,.12), transparent 64%),
+    linear-gradient(160deg, rgba(5,22,28,.96), rgba(7,6,4,.98));
+}
+body.route-moving .route-wipe {
+  animation: brandRouteWipe .52s cubic-bezier(.22,.61,.21,1) both;
+}
+body.route-settling main {
+  animation: routeContentSettle .42s cubic-bezier(.22,.61,.21,1) both;
+}
+@keyframes brandRouteWipe {
+  0% { opacity: 0; transform: translate3d(0, 102%, 0); }
+  40% { opacity: .7; transform: translate3d(0, 0, 0); }
+  100% { opacity: 0; transform: translate3d(0, -102%, 0); }
+}
+@keyframes routeContentSettle {
+  from { opacity: .96; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 1023px) {
+  body:not(.is-admin) main {
+    padding-bottom: calc(5.4rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* ---------- Buttons ---------- */
+.btn-primary {
+  @apply relative inline-flex min-h-12 items-center justify-center overflow-hidden rounded-full px-6 py-3 font-display font-semibold text-kblue-900 shadow-[0_16px_38px_rgba(7,6,4,0.30),inset_0_0_0_1px_rgba(255,255,255,0.22)] transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-kgreen-300/40 active:translate-y-0;
+  background: var(--cta-sheen), var(--cta-gradient);
+}
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 28%, rgba(255,255,255,0.62) 48%, transparent 66%);
+  transform: translateX(-160%) skewX(-15deg);
+  transition: transform 0.7s ease;
+}
+.btn-primary:hover::after { transform: translateX(160%) skewX(-15deg); }
+
+.btn-outline {
+  @apply inline-flex min-h-12 items-center justify-center rounded-full border border-kgreen-500/35 bg-kblue-900/70 px-6 py-3 font-display font-semibold text-kblue-50 shadow-sm transition hover:-translate-y-0.5 hover:border-kgreen-300 hover:bg-kgreen-500 hover:text-kblue-900 focus:outline-none focus:ring-4 focus:ring-kgreen-300/30 active:translate-y-0;
+}
+
+/* ============================================================
+   Premium interactions — site-wide hover + click feedback.
+   Applies to every action button and every call/email/WhatsApp
+   link on all pages, with no per-component markup.
+   ============================================================ */
+/* Click ripple host: a soft light burst radiates from the pointer */
+.btn-primary, .btn-outline, .nav-cta, .dock-action, .mobile-link, .nav-burger { position: relative; overflow: hidden; }
+.ripple-ink {
+  position: absolute;
+  border-radius: 9999px;
+  transform: scale(0);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 3;
+  background: radial-gradient(circle, rgba(255,255,255,0.58), rgba(6,161,84,0.20) 52%, transparent 72%);
+  animation: rippleOut 0.62s cubic-bezier(0.22,0.61,0.36,1) forwards;
+}
+@keyframes rippleOut { to { transform: scale(1); opacity: 0; } }
+
+/* Glossy outline buttons get the same light sweep as primary buttons */
+.btn-outline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(30,112,173,0.18) 48%, transparent 66%);
+  transform: translateX(-160%) skewX(-15deg);
+  transition: transform 0.7s ease;
+  pointer-events: none;
+}
+.btn-outline:hover::after { transform: translateX(160%) skewX(-15deg); }
+
+/* Crisp press feedback on tap/click for all primary actions */
+.btn-primary:active, .btn-outline:active, .nav-cta:active, .dock-action:active, .nav-burger:active { transform: scale(0.96); }
+/* Mobile menu rows: visible tap reaction (no hover exists on touch) */
+.mobile-link:active { transform: scale(0.985); background: rgba(6,161,84,0.14); }
+
+/* Communication links (call / email / WhatsApp): premium lift + glow on
+   hover and a subtle press on click — everywhere they appear. The :not()
+   skips links already styled as buttons so their own hover stays intact. */
+:where(a[href^="tel:"], a[href^="mailto:"], a[href*="wa.me"], a[href*="api.whatsapp"]):not(.btn-primary, .btn-outline, .dock-action, .nav-cta) {
+  transition: transform 0.2s ease, color 0.2s ease, text-shadow 0.25s ease;
+}
+:where(a[href^="tel:"], a[href^="mailto:"], a[href*="wa.me"], a[href*="api.whatsapp"]):not(.btn-primary, .btn-outline, .dock-action, .nav-cta):hover {
+  transform: translateY(-1.5px);
+  text-shadow: 0 8px 22px rgba(6,161,84,0.30);
+}
+:where(a[href^="tel:"], a[href^="mailto:"], a[href*="wa.me"], a[href*="api.whatsapp"]):not(.btn-primary, .btn-outline, .dock-action, .nav-cta):active {
+  transform: translateY(0) scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ripple-ink { display: none; }
+}
+
+/* ---------- Surfaces ---------- */
+.card {
+  @apply relative overflow-hidden rounded-2xl border border-white/[0.16] bg-kblue-900/85 p-6 text-kblue-50 shadow-[0_22px_70px_rgba(0,0,0,0.30),inset_0_1px_0_rgba(255,255,255,0.12)] transition duration-300;
+  background-image:
+    radial-gradient(420px 180px at 0% 0%, rgba(6,161,84,0.11), transparent 64%),
+    linear-gradient(180deg, rgba(31,29,26,0.94), rgba(7,6,4,0.88));
+}
+.card:hover {
+  @apply -translate-y-1 border-kgreen-300/40 shadow-[0_34px_90px_rgba(0,0,0,0.38)];
+}
+/* animated gradient border ring, revealed on hover */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  padding: 1.4px;
+  background: linear-gradient(135deg, rgba(6,161,84,0.62), rgba(30,112,173,0.34) 54%, rgba(30,112,173,0.30));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+.card:hover::before { opacity: 1; }
+/* forms shouldn't bob on hover */
+form.card:hover { @apply translate-y-0; }
+
+/* Reusable gradient icon badge */
+.icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  color: #fff;
+  background-image:
+    linear-gradient(135deg, rgba(255,255,255,0.18), transparent 36%),
+    linear-gradient(135deg, #06a154, #1e70ad 58%, #05161c);
+  box-shadow: 0 14px 34px rgba(7,6,4,0.34), inset 0 1px 0 rgba(255,255,255,0.28);
+  position: relative;
+  overflow: hidden;
+}
+.icon-badge::after {
+  content: "";
+  position: absolute;
+  inset: auto 12% 10% 12%;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(30,112,173,0.82);
+  box-shadow: 0 0 16px rgba(6,161,84,0.36);
+}
+
+/* Frosted-glass chip (for dark/photo backgrounds) */
+.glass-chip {
+  @apply inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-4 py-2 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22)];
+}
+
+/* Eyebrow label with a small leading accent bar for a designed, editorial feel */
+.eyebrow { @apply inline-flex items-center gap-2.5 text-xs font-extrabold uppercase tracking-[0.3em] text-kgreen-500; }
+.eyebrow::before {
+  content: "";
+  height: 2px;
+  width: 1.6rem;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+/* Reusable spec / tag pill */
+.chip {
+  @apply inline-flex items-center gap-2 rounded-full border border-kgreen-300/30 bg-kblue-900/75 px-4 py-2 text-sm font-semibold text-kblue-50 transition;
+}
+.chip:hover { @apply border-kgreen-300 bg-kgreen-100 text-kblue-900; }
+
+/* Brand gradient text — a static premium gradient on accent words (no idle
+   shimmer loop, which read decorative/cheap). */
+.text-gradient {
+  background-image: linear-gradient(110deg, #fbf7ec, #06a154 30%, #63d99b 56%, #1e70ad 88%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.glass-panel {
+  @apply rounded-2xl border border-kgreen-300/20 bg-kblue-900/85 text-kblue-50 shadow-[0_28px_88px_rgba(0,0,0,0.34)];
+}
+
+.section-shell { @apply mx-auto max-w-7xl px-4 sm:px-6; position: relative; z-index: 1; }
+
+.fg-stage,
+.page-band,
+.home-story,
+.journey-stage,
+.film-stage,
+.network-stage {
+  padding-top: clamp(2.75rem, 5vw, 4.8rem) !important;
+  padding-bottom: clamp(2.75rem, 5vw, 4.8rem) !important;
+}
+
+.fg-stage,
+.home-story,
+.journey-stage,
+.film-stage,
+.network-stage {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(2,10,12,0.58), rgba(5,18,18,0.44) 48%, rgba(2,9,11,0.60)),
+    radial-gradient(820px 320px at 16% 4%, rgba(6,161,84,0.10), transparent 66%),
+    radial-gradient(760px 300px at 84% 100%, rgba(30,112,173,0.08), transparent 70%) !important;
+}
+
+.page-band {
+  counter-increment: premium-section;
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(2,10,12,0.68), rgba(5,18,18,0.56) 50%, rgba(2,9,11,0.70)),
+    radial-gradient(900px 360px at 12% 0%, rgba(6,161,84,0.09), transparent 66%),
+    radial-gradient(760px 320px at 88% 12%, rgba(30,112,173,0.07), transparent 70%);
+  color: #f4f1ea;
+}
+.page-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(720px 320px at 8% 8%, rgba(6,161,84,0.09), transparent 62%),
+    radial-gradient(740px 360px at 92% 18%, rgba(30,112,173,0.055), transparent 62%),
+    linear-gradient(135deg, rgba(255,255,255,0.045), transparent 42%);
+}
+.page-band::after {
+  content: "";
+  position: absolute;
+  left: max(1rem, calc((100vw - 80rem) / 2));
+  right: max(1rem, calc((100vw - 80rem) / 2));
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(6,161,84,0.42), rgba(30,112,173,0.26), transparent);
+  opacity: .72;
+}
+@media (min-width: 1180px) {
+  .page-band > .section-shell::before {
+    content: "0" counter(premium-section);
+    position: absolute;
+    right: calc(100% + 1rem);
+    top: .35rem;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-family: "Sora", sans-serif;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .28em;
+    color: rgba(30,112,173,0.72);
+  }
+  .page-band > .section-shell::after {
+    content: "";
+    position: absolute;
+    right: calc(100% + 1.42rem);
+    top: 4.2rem;
+    width: 1px;
+    height: min(9rem, 38vh);
+    background: linear-gradient(180deg, rgba(6,161,84,0.58), rgba(30,112,173,0.24), transparent);
+  }
+}
+.page-band :where(.text-ink, .text-ink\/45, .text-ink\/50, .text-ink\/55, .text-ink\/60, .text-ink\/65, .text-ink\/70, .text-ink\/75, .text-kblue-900) {
+  color: rgba(244,241,234,0.78);
+}
+.page-band :where(h1, h2):not(.rich-card h1, .rich-card h2, [class*="bg-white"] h1, [class*="bg-white"] h2) {
+  color: #f4f1ea;
+}
+.page-band :where(.rich-card, [class*="bg-white"]) :where(.text-ink, .text-ink\/45, .text-ink\/50, .text-ink\/55, .text-ink\/60, .text-ink\/65, .text-ink\/70, .text-ink\/75) {
+  color: rgba(7,6,4,0.68);
+}
+.page-band :where(.rich-card, [class*="bg-white"]) :where(.text-kblue-900) {
+  color: #05161c;
+}
+.page-band :where(.rich-card, [class*="bg-white"]) .eyebrow {
+  color: #0f766e;
+}
+
+/* ============================================================
+   Premium solid surfaces, site-wide. Every inner-page card/panel uses
+   layered dark panels and clean light edges without blur.
+   ============================================================ */
+  .rich-card,
+  .lux-panel {
+    background:
+      radial-gradient(440px 220px at 0% 0%, rgba(6,161,84,0.20), transparent 60%),
+      radial-gradient(420px 240px at 100% 100%, rgba(30,112,173,0.12), transparent 62%),
+      linear-gradient(158deg, rgba(18,42,42,0.93), rgba(4,15,16,0.92)) !important;
+    border-color: rgba(99,217,155,0.20) !important;
+    color: #f1ede3 !important;
+    box-shadow:
+      0 36px 80px rgba(0,0,0,0.52),
+      inset 0 1px 0 rgba(255,255,255,0.16),
+      inset 0 -1px 0 rgba(0,0,0,0.35) !important;
+  }
+  /* feature accent — a logo green/blue top bar marks every card as a feature */
+  .rich-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, #06a154, #1e70ad 58%, rgba(30,112,173,.55));
+    opacity: .92;
+    z-index: 2;
+  }
+  /* re-light the text that the desktop cream-card rules had darkened */
+  .page-band :where(.rich-card, .lux-panel) :where(.text-ink, .text-ink\/45, .text-ink\/50, .text-ink\/55, .text-ink\/60, .text-ink\/65, .text-ink\/70, .text-ink\/75) {
+    color: rgba(244,241,234,0.84) !important;
+  }
+  .page-band :where(.rich-card, .lux-panel) :where(.text-kblue-900, .text-kblue-800, .text-kblue-700) {
+    color: #f6f2e8 !important;
+  }
+  .page-band :where(.rich-card, .lux-panel) .eyebrow { color: #63d99b !important; }
+  /* chips inside dark cards read better with a light-on-dark treatment */
+  .rich-card .chip {
+    background: rgba(6,161,84,0.12) !important;
+    border-color: rgba(6,161,84,0.28) !important;
+    color: #f1ede3 !important;
+  }
+  /* form inputs inside dark cards: dark glass + light text (otherwise the
+     light input inherits the card's light text → invisible). */
+  .rich-card .form-control,
+  .lux-panel .form-control,
+  .rich-card input:not([type=checkbox]):not([type=radio]),
+  .rich-card textarea {
+    background: rgba(255,255,255,0.06) !important;
+    border-color: rgba(6,161,84,0.22) !important;
+    color: #f6f2e8 !important;
+  }
+  .rich-card .form-control::placeholder,
+  .lux-panel .form-control::placeholder,
+  .rich-card input::placeholder,
+  .rich-card textarea::placeholder { color: rgba(244,241,234,0.46) !important; }
+  .rich-card .form-control:focus,
+  .lux-panel .form-control:focus {
+    background: rgba(255,255,255,0.10) !important;
+    border-color: #06a154 !important;
+  }
+
+@supports (animation-timeline: view()) {
+  .page-band {
+    animation: sectionSettle both linear;
+    animation-timeline: view();
+    animation-range: entry 0% cover 24%;
+  }
+  @keyframes sectionSettle {
+    from { transform: translateY(8px); opacity: .98; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+}
+.rich-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid rgba(6,161,84,0.18);
+  background:
+    radial-gradient(460px 220px at -8% -10%, rgba(6,161,84,0.10), transparent 64%),
+    linear-gradient(160deg, rgba(244,241,234,0.94), rgba(231,223,209,0.78));
+  box-shadow: 0 24px 78px rgba(0,0,0,0.26);
+  transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease;
+}
+.rich-card > * { position: relative; z-index: 1; }
+.rich-card::after {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255,255,255,0.74), transparent 22%),
+    radial-gradient(circle at 85% 18%, rgba(30,112,173,0.12), transparent 28%);
+  opacity: 0;
+  transform: translate3d(-5%, 4%, 0) rotate(0deg);
+  transition: opacity .35s ease, transform .65s ease;
+}
+.rich-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(6,161,84,0.42);
+  box-shadow: 0 36px 96px rgba(0,0,0,0.32);
+}
+.rich-card:hover::after {
+  opacity: 1;
+  transform: translate3d(3%, -3%, 0) rotate(8deg);
+}
+.lux-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid rgba(255,255,255,0.78);
+  background:
+    linear-gradient(135deg, rgba(244,241,234,0.92), rgba(231,223,209,0.66)),
+    radial-gradient(520px 260px at 0% 0%, rgba(6,161,84,0.14), transparent 62%);
+  box-shadow: 0 24px 76px rgba(0,0,0,0.28);
+}
+.lux-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(96,73,21,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(96,73,21,0.08) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(135deg, #000 0%, transparent 70%);
+}
+.kinetic-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  font-family: "Sora", sans-serif;
+  font-weight: 800;
+  color: #06a154;
+}
+.kinetic-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.28rem;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #06a154, #1e70ad, #1e70ad);
+  transform: scaleX(.34);
+  transform-origin: left;
+  transition: transform .25s ease;
+}
+.kinetic-link:hover::after { transform: scaleX(1); }
+.image-lift {
+  overflow: hidden;
+  border-radius: 1rem;
+  box-shadow: 0 24px 70px rgba(7,6,4,0.24);
+}
+.image-lift img {
+  transition: transform .75s ease, filter .75s ease;
+}
+.image-lift:hover img {
+  transform: scale(1.06);
+  filter: saturate(1.08) contrast(1.04);
+}
+.metric-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.55);
+  background: rgba(255,255,255,0.78);
+  padding: .6rem .9rem;
+  font-size: .78rem;
+  font-weight: 800;
+  color: #05161c;
+  box-shadow: 0 14px 34px rgba(7,17,31,0.11), inset 0 1px 0 rgba(255,255,255,0.55);
+}
+.form-control {
+  width: 100%;
+  border-radius: .85rem;
+  border: 1px solid rgba(13,27,30,0.12);
+  background: rgba(255,255,255,0.82);
+  padding: .9rem 1rem;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.72), 0 10px 28px rgba(7,17,31,0.045);
+}
+.form-control:focus {
+  border-color: #06a154;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(6,161,84,0.16), 0 14px 34px rgba(7,6,4,0.12);
+}
+
+/* ============================================================
+   Shining logo — wraps the brand JPG in a glossy lit pill with a
+   periodic light sweep so the logo never reads as a dull flat box.
+   Use:  <span class="logo-shine"><img ...></span>
+   ============================================================ */
+.logo-shine {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0.9rem;
+  padding: 0.28rem 0.55rem;
+  overflow: hidden;
+  background: linear-gradient(135deg, #fffaf0 0%, #f4f1ea 55%, #ffffff 100%);
+  box-shadow:
+    0 8px 22px rgba(7,6,4,0.18),
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 0 0 1px rgba(255,255,255,0.7) inset;
+}
+.logo-shine > img { position: relative; z-index: 1; }
+.logo-shine::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle at 30% 18%, rgba(6,161,84,0.20), transparent 45%);
+  pointer-events: none;
+}
+.logo-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 45%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.95), transparent);
+  transform: translateX(-200%) skewX(-16deg);
+  pointer-events: none;
+  z-index: 2;
+}
+/* dark-context variant (e.g. footer / login on deep black) */
+.logo-shine--dark {
+  background: linear-gradient(135deg, #fffaf0 0%, #f4f1ea 60%, #ffffff 100%);
+  box-shadow: 0 12px 34px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.25) inset;
+}
+
+input, textarea, button, a { -webkit-tap-highlight-color: transparent; }
+img { max-width: 100%; }
+
+/* Consistent, visible keyboard-focus ring across interactive elements */
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.9), 0 0 0 6px rgba(6,161,84,0.48);
+  border-radius: 0.75rem;
+}
+
+/* Sleek scrollbar to match the modern look */
+* { scrollbar-width: thin; scrollbar-color: rgba(6,161,84,0.45) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(6,161,84,0.58), rgba(30,112,173,0.32));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, rgba(99,217,155,0.74), rgba(6,161,84,0.72)); background-clip: padding-box; }
+
+/* Section reveal: a short, professional depth move. No blur or clipping, and the
+   distance is intentionally shallow so it feels premium without becoming heavy. */
+.travel {
+  transform-origin: center 72%;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease-out;
+}
+.travel:not(.inview) {
+  opacity: 0.24;
+  transform: perspective(1200px) translate3d(0, 30px, -86px) scale(0.974);
+}
+.travel.inview {
+  opacity: 1;
+  transform: perspective(1200px) translate3d(0, 0, 0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .travel, .travel:not(.inview) { opacity: 1; transform: none; filter: none; clip-path: none; }
+}
+
+@keyframes marquee { to { transform: translateX(-50%); } }
+.marquee { animation: marquee 40s linear infinite; }
+.marquee-rev { animation: marquee 40s linear infinite reverse; }
+/* !important so these beat the inline animation-play-state the JS observer sets. */
+.marquee:hover, .marquee-rev:hover { animation-play-state: paused !important; }
+/* While the user is actively scrolling, freeze the heavy image strips — two wide
+   animated layers compositing during a vertical scroll is what stutters phones.
+   They resume ~160ms after scrolling stops (see AppComponent is-scrolling). */
+body.is-scrolling .marquee,
+body.is-scrolling .marquee-rev { animation-play-state: paused !important; }
+
+@media (max-width: 767px) {
+  .marquee, .marquee-rev { animation-duration: 65s; }
+}
+
+@media (max-width: 640px) {
+  .section-shell {
+    padding-inline: 1rem;
+  }
+  .fg-stage,
+  .home-story,
+  .journey-stage,
+  .film-stage,
+  .network-stage {
+    padding-top: 2.35rem !important;
+    padding-bottom: 2.35rem !important;
+  }
+  .page-band {
+    padding-block: 2.05rem !important;
+  }
+  .page-band::after {
+    inset-inline: 1rem;
+  }
+  .rich-card,
+  .card,
+  .lux-panel,
+  .glass-panel {
+    border-radius: 1.05rem;
+    box-shadow: 0 18px 56px rgba(0,0,0,.24);
+  }
+  .rich-card:hover,
+  .card:hover {
+    transform: none;
+  }
+  .page-band :where(h1, h2) {
+    line-height: 1.03;
+  }
+  .eyebrow {
+    gap: .55rem;
+    font-size: .68rem;
+    letter-spacing: .14em;
+  }
+  .eyebrow::before {
+    width: 1.05rem;
+  }
+  .btn-primary,
+  .btn-outline {
+    min-height: 3.15rem;
+    padding-inline: 1.1rem;
+  }
+  .page-band .btn-primary,
+  .page-band .btn-outline,
+  .rich-card .btn-primary,
+  .rich-card .btn-outline {
+    width: 100%;
+  }
+  .glass-chip,
+  .chip {
+    padding: .55rem .78rem;
+    font-size: .76rem;
+  }
+  .metric-pill {
+    padding: .52rem .76rem;
+    font-size: .72rem;
+  }
+  /* Phones keep the same depth cue with a shorter path and faster finish. */
+  .travel {
+    transition: transform 0.36s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.24s ease-out;
+  }
+  .travel:not(.inview) {
+    opacity: 0.28;
+    transform: perspective(1000px) translate3d(0, 22px, -56px) scale(0.978);
+  }
+  .form-control {
+    min-height: 3.1rem;
+    border-radius: .78rem;
+    padding: .82rem .92rem;
+  }
+}
+
+/* ============================================================
+   Global motion layer — scroll progress, ambient floating shapes,
+   magnetic buttons, animated link underlines, split-text headings
+   and content parallax. One engine in AppComponent drives all of it.
+   Everything is gated behind prefers-reduced-motion.
+   ============================================================ */
+
+/* Ambient floating shapes — faint screen-blend glows that drift over the
+   whole page for a constant, premium sense of life. Kept very low contrast
+   so text stays perfectly readable. */
+/* Magnetic buttons follow the cursor a little, then ease back */
+.btn-primary, .btn-outline, .nav-cta { will-change: transform; }
+
+/* Animated sliding underline for nav + footer text links */
+:where(app-navbar, app-footer) a:not([class*="btn"]):not([class*="rounded"]):not(.nav-cta) {
+  background-image: linear-gradient(90deg, #63d99b, #1e70ad);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 2px;
+  transition: background-size .32s cubic-bezier(.4,0,.2,1), color .2s ease;
+}
+:where(app-navbar, app-footer) a:not([class*="btn"]):not([class*="rounded"]):not(.nav-cta):hover {
+  background-size: 100% 2px;
+}
+
+/* Split-text headings — each word rises out from behind a clip mask */
+.sw {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+.sw-i {
+  display: inline-block;
+  transform: translateY(118%);
+  transition: transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--i, 0) * 0.028s);
+}
+.split-in .sw-i { transform: translateY(0); }
+
+/* Photo cards sit on their own GPU layer so their cinematic filter/mix-blend
+   grade composites cheaply and stays crisp. (--py is no longer scroll-driven —
+   per-frame parallax was removed for smoothness — so this is a stable no-op
+   transform that simply promotes the layer.) */
+.story-photo, .prod-shot, .svc-shot, .journey-media {
+  transform: translate3d(0, var(--py, 0px), 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-photo, .prod-shot, .svc-shot, .journey-media { transform: none; }
+}
+
+/* ============================================================
+   Cinematic on-brand grade for content photos. Two cohesive layers:
+   1) a consistent contrast/saturation lift so every shot reads rich and
+      deliberate (not a raw phone snap);
+   2) a faint cool "light-leak" via a screen-blended green/blue wash, which
+      tints highlights cool WITHOUT hue-rotating the image — so real product
+      colours (red Chetaks, green scooters) stay true.
+   Isolated so the blend never leaks onto the section behind the card.
+   ============================================================ */
+.prod-shot, .svc-shot, .story-photo, .journey-media, .ga-tile { isolation: isolate; }
+.prod-shot, .svc-shot, .story-photo, .journey-media {
+  filter: contrast(1.06) saturate(1.06) brightness(0.985);
+  transition: filter .5s ease;
+}
+.prod-shot:hover, .svc-shot:hover, .story-photo:hover, .journey-media:hover {
+  filter: contrast(1.04) saturate(1.15) brightness(1.03);
+}
+.prod-shot::after, .svc-shot::after, .story-photo::after, .ga-tile::after, .journey-media::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background: linear-gradient(155deg, rgba(6,161,84,0.11), rgba(30,112,173,0.07) 58%, transparent 100%);
+  mix-blend-mode: screen;
+}
+/* Mobile smoothness: mix-blend-mode layers force the GPU to re-read the backdrop
+   on every scroll frame, which makes phone scrolling stutter/feel stuck. Drop
+   the screen-blend photo wash and the fixed soft-light grain on phones — the
+   static colour grade still carries the look. */
+@media (max-width: 767px) {
+  .prod-shot::after, .svc-shot::after, .story-photo::after, .ga-tile::after, .journey-media::before {
+    display: none;
+  }
+  body::after { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .prod-shot, .svc-shot, .story-photo, .journey-media { transition: none; }
+}

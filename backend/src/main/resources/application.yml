@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: kallingal-api
+  r2dbc:
+    url: ${SPRING_R2DBC_URL:r2dbc:postgresql://localhost:5432/kallingal}
+    username: ${SPRING_R2DBC_USERNAME:kallingal}
+    password: ${SPRING_R2DBC_PASSWORD:kallingal}
+  flyway:
+    url: ${SPRING_FLYWAY_URL:jdbc:postgresql://localhost:5432/kallingal}
+    user: ${SPRING_R2DBC_USERNAME:kallingal}
+    password: ${SPRING_R2DBC_PASSWORD:kallingal}
+
+app:
+  cache:
+    maximum-size: ${CACHE_MAXIMUM_SIZE:500}
+    ttl-seconds: ${CACHE_TTL_SECONDS:300}
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    # Default password is "klg"; override with ADMIN_PASSWORD in production.
+    # (SecurityConfig still rejects a blank or the old 'change-me-in-coolify' value.)
+    password: ${ADMIN_PASSWORD:klg}
+  cors:
+    origins: ${CORS_ORIGINS:http://localhost:4200}
+
+server:
+  port: 8080

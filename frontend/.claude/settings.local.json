@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx ng *)",
+      "Bash(ls -la src/assets/brand/)",
+      "Bash(ls src/assets/)",
+      "Bash(cd \"d:/kallingal-fullstack \\(2\\)/kallingal/backend\" && find . -type f -not -path '*/node_modules/*' -not -path '*/.git/*' | head -60)",
+      "Read(//d/kallingal-fullstack \\(2\\)/kallingal/backend/**)",
+      "Read(//d/kallingal-fullstack \\(2\\)/kallingal/**)",
+      "WebFetch(domain:techorizdigitalacademy.com)"
+    ],
+    "additionalDirectories": [
+      "d:\\kallingal-fullstack (2)\\kallingal\\backend\\src\\main\\resources\\db\\migration",
+      "d:\\kallingal-fullstack (2)\\kallingal\\backend\\src\\main\\java\\com\\kallingal\\domain",
+      "d:\\kallingal-fullstack (2)\\kallingal\\backend\\src\\main\\java\\com\\kallingal\\repository",
+      "d:\\kallingal-fullstack (2)\\kallingal\\backend\\src\\main\\java\\com\\kallingal\\handler"
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+# ---- Node / Angular (frontend) ----
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.angular/cache/
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# ---- Java / Maven (backend) ----
+target/
+backend/target/
+*.class
+*.jar
+!**/.mvn/wrapper/maven-wrapper.jar
+
+# ---- IDE / editor ----
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+
+# ---- Source media masters (NOT served by the app; keep them out of the repo) ----
+# The app only ships the compressed copies in frontend/src/assets/. These raw
+# originals are huge (one is ~295MB, over GitHub's 100MB/file hard limit).
+frontend/media-originals/
+frontend/*.mp4
+frontend/kallingal-hero-original-*.mp4
+
+# ---- Env / secrets ----
+.env
+.env.*
+!.env.example

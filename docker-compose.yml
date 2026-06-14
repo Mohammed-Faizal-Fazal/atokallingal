@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: kallingal
+      POSTGRES_USER: kallingal
+      POSTGRES_PASSWORD: ${SPRING_R2DBC_PASSWORD:-kallingal}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kallingal -d kallingal"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build: ./backend
+    environment:
+      SPRING_R2DBC_URL: r2dbc:postgresql://db:5432/kallingal
+      SPRING_FLYWAY_URL: jdbc:postgresql://db:5432/kallingal
+      SPRING_R2DBC_USERNAME: kallingal
+      SPRING_R2DBC_PASSWORD: ${SPRING_R2DBC_PASSWORD:-kallingal}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-localadmin}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4200,http://localhost}
+    expose: ["8080"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # nginx serves the SPA and reverse-proxies /api/ to the backend service
+  # (see frontend/nginx.conf -> http://backend:8080). In Coolify, assign your
+  # domain to THIS service; Coolify/Traefik routes it to container port 80.
+  frontend:
+    build: ./frontend
+    expose: ["80"]
+    depends_on: [backend]
+
+volumes:
+  pgdata:
