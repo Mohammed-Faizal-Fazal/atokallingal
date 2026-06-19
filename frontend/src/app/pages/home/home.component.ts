@@ -100,7 +100,7 @@ type VideoItem = {
 
       <div class="heroFade mt-9 flex flex-wrap gap-2.5">
         @for (chip of heroChips(); track chip; let i = $index) {
-          <span class="glass-chip">
+          <a [routerLink]="routeFor(chip)" class="glass-chip cursor-pointer transition hover:-translate-y-0.5 hover:text-kteal-100">
             @switch (i) {
               @case (0) { <svg lucideStore class="h-4 w-4 text-kteal-200"></svg> }
               @case (1) { <svg lucideZap class="h-4 w-4 text-kgreen-300"></svg> }
@@ -108,14 +108,15 @@ type VideoItem = {
               @default { <svg lucideShieldCheck class="h-4 w-4 text-kteal-200"></svg> }
             }
             {{ chip }}
-          </span>
+          </a>
         }
       </div>
 
       @if (heroHighlights().length) {
         <div class="heroFade hero-dock mt-8 grid max-w-5xl gap-3 sm:grid-cols-3">
           @for (h of heroHighlights().slice(0, 3); track h.label) {
-            <article class="group rounded-2xl border border-white/18 bg-white/[0.12] p-4 text-white shadow-[0_20px_70px_rgba(0,0,0,0.20)] transition hover:-translate-y-1 hover:border-kteal-200/50 hover:bg-white/[0.18]">
+            <a [routerLink]="routeFor(h.value, h.label)" class="group relative block rounded-2xl border border-white/18 bg-white/[0.12] p-4 text-white shadow-[0_20px_70px_rgba(0,0,0,0.20)] transition hover:-translate-y-1 hover:border-kteal-200/50 hover:bg-white/[0.18]">
+              <svg lucideArrowRight class="absolute right-3 top-3 h-4 w-4 text-white/35 transition group-hover:translate-x-0.5 group-hover:text-kteal-200"></svg>
               <div class="flex items-center gap-3">
                 <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-kblue-900 shadow-lg transition group-hover:scale-105">
                   @switch (h.icon) {
@@ -130,7 +131,7 @@ type VideoItem = {
                   <p class="mt-1 truncate text-xs font-bold uppercase tracking-wide text-white/66">{{ h.label }}</p>
                 </div>
               </div>
-            </article>
+            </a>
           }
         </div>
       }
@@ -1234,6 +1235,19 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   heroChips() {
     return this.splitCsv(this.homeHero()?.chips);
+  }
+
+  /**
+   * Best-fit destination for a hero chip / highlight card so the hero is
+   * navigable. Keyword-matched (not hard-coded to the seed text) so it keeps
+   * working when the chips/highlights are edited from the admin.
+   */
+  routeFor(...parts: (string | null | undefined)[]): string {
+    const t = parts.join(' ').toLowerCase();
+    if (/showroom|outlet|branch|nearest|location/.test(t)) return '/showrooms';
+    if (/service|\basc\b|repair|insur|policy|policies|claim|renewal|warranty|spare/.test(t)) return '/services';
+    if (/chetak|bajaj|vehicle|wheeler|\bev\b|electric|scooter|pulsar|product/.test(t)) return '/products';
+    return '/products';
   }
 
   private splitCsv(value?: string | null) {
