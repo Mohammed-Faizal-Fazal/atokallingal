@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import {
   Showroom, GalleryImage, ServiceItem, JobOpening, Lead, JobApplication, Testimonial, Faq,
   PageHero, BrandItem, ProductCategory, HomeOffer, HomeHighlight, HomeVideo,
-  ServicePanel, ServicePromise, CareerPerk
+  ServicePanel, ServicePromise, CareerPerk, AboutMilestone, AboutBrand
 } from './api.service';
 
 export interface Reports {
@@ -35,6 +35,7 @@ export class AdminApiService {
 
   leads(): Observable<Lead[]> { return this.http.get<Lead[]>('/api/admin/leads', { headers: this.headers() }); }
   applications(): Observable<JobApplication[]> { return this.http.get<JobApplication[]>('/api/admin/applications', { headers: this.headers() }); }
+  downloadCv(id: number): Observable<Blob> { return this.http.get(`/api/admin/applications/${id}/cv`, { headers: this.headers(), responseType: 'blob' }); }
 
   saveShowroom(s: Showroom) { return this.http.post<Showroom>('/api/admin/showrooms', s, { headers: this.headers() }); }
   deleteShowroom(id: number) { return this.http.delete(`/api/admin/showrooms/${id}`, { headers: this.headers() }); }
@@ -83,6 +84,14 @@ export class AdminApiService {
   careerPerks(): Observable<CareerPerk[]> { return this.http.get<CareerPerk[]>('/api/admin/career-perks', { headers: this.headers() }); }
   saveCareerPerk(v: CareerPerk) { return this.http.post<CareerPerk>('/api/admin/career-perks', v, { headers: this.headers() }); }
   deleteCareerPerk(id: number) { return this.http.delete(`/api/admin/career-perks/${id}`, { headers: this.headers() }); }
+
+  aboutMilestones(): Observable<AboutMilestone[]> { return this.http.get<AboutMilestone[]>('/api/admin/about-milestones', { headers: this.headers() }); }
+  saveAboutMilestone(v: AboutMilestone) { return this.http.post<AboutMilestone>('/api/admin/about-milestones', v, { headers: this.headers() }); }
+  deleteAboutMilestone(id: number) { return this.http.delete(`/api/admin/about-milestones/${id}`, { headers: this.headers() }); }
+
+  aboutBrands(): Observable<AboutBrand[]> { return this.http.get<AboutBrand[]>('/api/admin/about-brands', { headers: this.headers() }); }
+  saveAboutBrand(v: AboutBrand) { return this.http.post<AboutBrand>('/api/admin/about-brands', v, { headers: this.headers() }); }
+  deleteAboutBrand(id: number) { return this.http.delete(`/api/admin/about-brands/${id}`, { headers: this.headers() }); }
 
   saveTestimonial(t: Testimonial) { return this.http.post<Testimonial>('/api/admin/testimonials', t, { headers: this.headers() }); }
   deleteTestimonial(id: number) { return this.http.delete(`/api/admin/testimonials/${id}`, { headers: this.headers() }); }

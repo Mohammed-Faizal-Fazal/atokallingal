@@ -12,11 +12,22 @@ import { BrandLogoComponent } from '../shared/brand-logo.component';
            style="background:radial-gradient(620px 420px at 20% 10%, rgba(6,161,84,0.15), transparent 60%),radial-gradient(560px 460px at 90% 90%, rgba(30,112,173,0.10), transparent 60%),linear-gradient(135deg, rgba(7,6,4,1), rgba(31,29,26,.94));"></div>
       <div class="relative text-center">
         <div #logo class="flex justify-center">
-          <app-brand-logo [size]="76" [dark]="true"/>
+          @if (!imgFailed) {
+            <!-- Official Kallingal logo lockup (includes the "Redefining Excellence"
+                 tagline). Drop the transparent PNG at assets/brand/kallingal-logo-full.png.
+                 Until then we fall back to the wordmark + typed tagline below. -->
+            <img src="assets/brand/kallingal-logo-full.png"
+                 alt="Kallingal — Redefining Excellence"
+                 class="pre-logo select-none" (error)="imgFailed = true"/>
+          } @else {
+            <app-brand-logo [size]="76" [dark]="true"/>
+          }
         </div>
         <div #tagline class="mt-5 opacity-0">
-          <p class="brand-tagline text-2xl italic leading-none text-kgreen-300 sm:text-[1.75rem]">Redefining Excellence</p>
-          <p class="mt-3 font-body text-[0.6rem] font-bold uppercase tracking-[0.34em] text-kteal-100/75">Bajaj · Chetak · Tata · Trivandrum</p>
+          @if (imgFailed) {
+            <p class="brand-tagline text-2xl italic leading-none text-kgreen-300 sm:text-[1.75rem]">Redefining Excellence</p>
+          }
+          <p class="font-body text-[0.6rem] font-bold uppercase tracking-[0.34em] text-kteal-100/75" [class.mt-3]="imgFailed">Bajaj · Chetak · Tata · Trivandrum</p>
         </div>
 
         <div class="relative mx-auto mt-9 w-64 max-w-[76vw]">
@@ -29,8 +40,15 @@ import { BrandLogoComponent } from '../shared/brand-logo.component';
     </div>
   `,
   styles: [`
+    /* Official logo lockup on the loader — scales for web + mobile. */
+    .pre-logo {
+      width: min(82vw, 29rem);
+      height: auto;
+      filter: drop-shadow(0 12px 34px rgba(0,0,0,0.5));
+    }
     /* Brand tagline, echoing the logo's blue italic serif "Redefining Excellence"
-       using the site's editorial serif (Linux Libertine), with a soft blue glow. */
+       using the site's editorial serif (Linux Libertine), with a soft blue glow.
+       Only used as a fallback when the official logo image is not present. */
     .brand-tagline {
       font-family: var(--font-editorial), Georgia, serif;
       letter-spacing: 0.012em;
@@ -77,6 +95,8 @@ import { BrandLogoComponent } from '../shared/brand-logo.component';
   `]
 })
 export class PreloaderComponent implements AfterViewInit {
+  /** Flips to the wordmark + typed tagline if the official logo PNG isn't present yet. */
+  imgFailed = false;
   @ViewChild('overlay') overlay!: ElementRef<HTMLDivElement>;
   @ViewChild('logo') logo!: ElementRef<HTMLDivElement>;
   @ViewChild('tagline') tagline!: ElementRef<HTMLDivElement>;

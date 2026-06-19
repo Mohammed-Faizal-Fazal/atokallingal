@@ -845,9 +845,10 @@ type VideoItem = {
         padding-bottom: 1.35rem;
       }
       .hero-title {
-        max-width: 10ch;
-        font-size: clamp(2.65rem, 10.8vw, 5.1rem);
+        max-width: 100%;
+        font-size: clamp(2.2rem, 8vw, 4.4rem);
         line-height: 1;
+        letter-spacing: -0.01em;
       }
       .story-grid,
       .journey-layout,
@@ -942,9 +943,10 @@ type VideoItem = {
       .hero-stage::before { inset: 5.25rem .75rem 3.8rem; border-radius: 1.35rem; opacity: .38; }
       .hero-3d::after { display: none; }
       .hero-title {
-        max-width: 10ch;
-        font-size: clamp(2.18rem, 10.8vw, 3.55rem);
-        line-height: 1;
+        max-width: 100%;
+        font-size: clamp(1.95rem, 8.6vw, 3rem);
+        line-height: 1.02;
+        letter-spacing: -0.018em;
         text-shadow: 0 18px 60px rgba(6,161,84,.20);
       }
       /* Full-width, premium CTAs that read as the clear next step on a phone */
@@ -1155,7 +1157,7 @@ type VideoItem = {
       }
     }
     @media (max-width: 420px) {
-      .hero-title { font-size: clamp(1.95rem, 10.2vw, 2.9rem); }
+      .hero-title { font-size: clamp(1.7rem, 8.8vw, 2.7rem); letter-spacing: -0.02em; }
       .hero-stage .btn-primary,
       .hero-stage .btn-outline {
         width: 100%;

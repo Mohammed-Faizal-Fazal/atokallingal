@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { LucideArrowRight, LucideTrendingUp, LucideUsers, LucideGraduationCap, LucideHeart } from '@lucide/angular';
-import { ApiService, CareerPerk, JobOpening, PageHero } from '../../shared/api.service';
+import { LucideArrowRight, LucideTrendingUp, LucideUsers, LucideGraduationCap, LucideHeart, LucidePaperclip, LucideX } from '@lucide/angular';
+import { ApiService, CareerPerk, JobApplication, JobOpening, PageHero } from '../../shared/api.service';
 import { ToastService } from '../../shared/toast.service';
 import { SettingsService } from '../../shared/settings.service';
 import { PageHeroComponent } from '../../shared/page-hero.component';
@@ -11,7 +11,7 @@ import { StatsBandComponent } from '../../shared/stats-band.component';
 @Component({
   selector: 'app-careers',
   standalone: true,
-  imports: [ReactiveFormsModule, PageHeroComponent, RevealDirective, StatsBandComponent, LucideArrowRight, LucideTrendingUp, LucideUsers, LucideGraduationCap, LucideHeart],
+  imports: [ReactiveFormsModule, PageHeroComponent, RevealDirective, StatsBandComponent, LucideArrowRight, LucideTrendingUp, LucideUsers, LucideGraduationCap, LucideHeart, LucidePaperclip, LucideX],
   template: `
   <app-page-hero [eyebrow]="hero()?.eyebrow || ''" [title]="hero()?.title || ''"
     [sub]="hero()?.sub || ''" [image]="hero()?.imageUrl || ''" [chips]="heroChips()"/>
@@ -88,9 +88,25 @@ import { StatsBandComponent } from '../../shared/stats-band.component';
         <input formControlName="phone" placeholder="Phone" class="cr-input"/>
         <input formControlName="email" type="email" placeholder="Email" class="cr-input"/>
         <textarea formControlName="note" rows="3" placeholder="Brief note (optional)" class="cr-input"></textarea>
+        <div>
+          <label class="cr-file" [class.cr-file--set]="cv()">
+            <input type="file" #cvInput
+              accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              (change)="onCvSelected($event)" class="cr-file-input"/>
+            <span class="cr-file-ico"><svg lucidePaperclip class="h-4 w-4"></svg></span>
+            <span class="cr-file-text">
+              <span class="cr-file-label">{{ cv() ? cv()!.name : 'Upload your CV' }}</span>
+              <span class="cr-file-hint">{{ cv() ? 'Tap to replace' : 'PDF, DOC or DOCX · max 5 MB' }}</span>
+            </span>
+          </label>
+          @if (cv()) {
+            <button type="button" (click)="clearCv(cvInput)" class="cr-file-clear"><svg lucideX class="h-3.5 w-3.5"></svg>Remove</button>
+          }
+          @if (cvError()) { <p class="cr-file-err">{{ cvError() }}</p> }
+        </div>
         <div class="flex flex-col gap-3 sm:flex-row">
-          <button type="submit" [disabled]="form.invalid || sending()" class="btn-primary disabled:opacity-50">Submit application</button>
-          <button type="button" (click)="applyViaWhatsApp(job)" [disabled]="form.invalid"
+          <button type="submit" [disabled]="form.invalid || sending() || !cv()" class="btn-primary disabled:opacity-50">Submit application</button>
+          <button type="button" (click)="applyViaWhatsApp(job)" [disabled]="form.invalid || !cv()"
             class="inline-flex min-h-12 items-center justify-center rounded-full bg-[#25D366] px-6 py-3 font-display font-semibold text-white transition hover:bg-[#1da851] disabled:opacity-50">
             Apply via WhatsApp
           </button>
@@ -168,6 +184,32 @@ import { StatsBandComponent } from '../../shared/stats-band.component';
     .cr-input::placeholder { color: rgba(244,241,234,0.46); }
     .cr-input:focus { border-color: #1e70ad; background: rgba(255,255,255,0.1); }
 
+    /* CV upload */
+    .cr-file {
+      position: relative; display: flex; align-items: center; gap: .9rem; cursor: pointer;
+      width: 100%; border-radius: .8rem;
+      border: 1px dashed rgba(6,161,84,0.4);
+      background: rgba(255,255,255,0.04);
+      padding: .8rem 1rem; transition: border-color .2s ease, background .2s ease;
+    }
+    .cr-file:hover { border-color: #1e70ad; background: rgba(255,255,255,0.07); }
+    .cr-file--set { border-style: solid; border-color: rgba(6,161,84,0.6); background: rgba(6,161,84,0.08); }
+    .cr-file-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+    .cr-file-ico {
+      display: inline-flex; height: 2.2rem; width: 2.2rem; flex-shrink: 0; align-items: center; justify-content: center;
+      border-radius: .6rem; color: #05161c;
+      background: linear-gradient(135deg, #35c985, #06a154 55%, #1e70ad);
+    }
+    .cr-file-text { display: flex; flex-direction: column; min-width: 0; }
+    .cr-file-label { font-size: .92rem; font-weight: 600; color: #f6f2e8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cr-file-hint { font-size: .74rem; color: rgba(244,241,234,0.5); }
+    .cr-file-clear {
+      display: inline-flex; align-items: center; gap: .3rem; margin-top: .5rem;
+      font-size: .76rem; color: rgba(244,241,234,0.6); transition: color .2s ease;
+    }
+    .cr-file-clear:hover { color: #fca5a5; }
+    .cr-file-err { margin-top: .5rem; font-size: .8rem; color: #fca5a5; }
+
     @media (max-width: 640px) {
       .cr-h2 { font-size: clamp(2rem, 9vw, 2.6rem); }
       .cr-open-head {
@@ -215,6 +257,8 @@ export class CareersComponent implements OnInit {
   jobs = signal<JobOpening[]>([]);
   applying = signal<JobOpening | null>(null);
   sending = signal(false);
+  cv = signal<{ name: string; type: string; data: string } | null>(null);
+  cvError = signal('');
   form = this.fb.nonNullable.group({
     name: ['', Validators.required],
     phone: ['', Validators.required],
@@ -233,21 +277,63 @@ export class CareersComponent implements OnInit {
   }
   pad(n: number) { return n < 10 ? '0' + n : '' + n; }
 
+  onCvSelected(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    this.cvError.set('');
+    if (!file) return;
+    if (!/\.(pdf|doc|docx)$/i.test(file.name)) {
+      this.cvError.set('Please upload a PDF, DOC or DOCX file.');
+      this.cv.set(null); input.value = ''; return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.cvError.set('File is too large (max 5 MB).');
+      this.cv.set(null); input.value = ''; return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result);
+      const comma = result.indexOf(',');
+      // strip the "data:<type>;base64," prefix — the backend wants raw base64
+      const data = comma >= 0 ? result.slice(comma + 1) : result;
+      this.cv.set({ name: file.name, type: file.type || 'application/octet-stream', data });
+      // clear the native input so re-picking the SAME file still fires 'change'
+      input.value = '';
+    };
+    reader.onerror = () => { this.cvError.set('Could not read that file. Please try again.'); this.cv.set(null); input.value = ''; };
+    reader.readAsDataURL(file);
+  }
+
+  clearCv(input?: HTMLInputElement) { this.cv.set(null); this.cvError.set(''); if (input) input.value = ''; }
+
+  private buildApplication(job: JobOpening): JobApplication {
+    const v = this.form.getRawValue();
+    const cv = this.cv();
+    return {
+      jobId: job.id!, name: v.name, phone: v.phone, email: v.email, note: v.note,
+      ...(cv ? { resumeFilename: cv.name, resumeContentType: cv.type, resumeData: cv.data } : {})
+    };
+  }
+
   applyViaWhatsApp(job: JobOpening) {
     const v = this.form.getRawValue();
-    const msg = `Job application: ${job.title}\nName: ${v.name}\nPhone: ${v.phone}\nEmail: ${v.email}\nNote: ${v.note || '-'}`;
+    const msg = `Job application: ${job.title}\nName: ${v.name}\nPhone: ${v.phone}\nEmail: ${v.email}\nNote: ${v.note || '-'}${this.cv() ? '\nCV: shared via the website' : ''}`;
     window.open(this.settings.waLink(msg), '_blank', 'noopener');
     this.toast.info('Opening WhatsApp with your application...');
-    this.api.applyJob({ jobId: job.id!, ...v }).subscribe({ next: () => {}, error: () => {} });
+    this.api.applyJob(this.buildApplication(job)).subscribe({
+      next: () => {},
+      error: () => this.toast.error('We opened WhatsApp, but could not save your CV on our site — please attach it directly in the chat.')
+    });
   }
 
   submit(job: JobOpening) {
     this.sending.set(true);
-    this.api.applyJob({ jobId: job.id!, ...this.form.getRawValue() }).subscribe({
+    this.api.applyJob(this.buildApplication(job)).subscribe({
       next: () => {
         this.toast.success('Application received. HR will be in touch.');
         this.sending.set(false);
         this.form.reset();
+        this.clearCv();
         this.applying.set(null);
       },
       error: () => {

@@ -175,7 +175,7 @@ import gsap from 'gsap';
     @media (max-width: 1023px) {
       .page-hero { min-height: 78svh; }
       .page-hero .ph-body { justify-content: flex-start; padding-top: 2.15rem; padding-bottom: 2.15rem; }
-      .ph-title { font-size: clamp(3rem, 12vw, 5.2rem); }
+      .ph-title { font-size: clamp(2.3rem, 8.6vw, 4.3rem); letter-spacing: -0.01em; }
       .ph-lead { font-size: 1rem; line-height: 1.8; }
     }
     @media (max-width: 640px) {
@@ -183,7 +183,7 @@ import gsap from 'gsap';
       .page-hero-img { filter: saturate(1.04) contrast(1.05) brightness(.74) grayscale(.08); }
       .ph-masthead { padding-top: 5.9rem; }
       .page-hero .ph-body { padding-top: 1.35rem; padding-bottom: 1.35rem; }
-      .ph-title { font-size: clamp(2.25rem, 10.8vw, 3.35rem); line-height: .92; }
+      .ph-title { font-size: clamp(1.85rem, 8.6vw, 2.95rem); line-height: .94; letter-spacing: -0.015em; }
       .ph-watermark { font-size: clamp(13rem, 62vw, 20rem); top: auto; bottom: 7%; right: -10vw; color: rgba(244,241,234,0.03); }
       .ph-rule { margin-top: 1.05rem; width: 7rem; }
       .ph-lead { font-size: .97rem; line-height: 1.78; }

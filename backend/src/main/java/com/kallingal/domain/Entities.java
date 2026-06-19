@@ -19,7 +19,9 @@ public class Entities {
   public record JobOpening(@Id Long id, String title, String department, String location, String description, Boolean active) {}
 
   @Table("job_applications")
-  public record JobApplication(@Id Long id, Long jobId, String name, String phone, String email, String resumeUrl, String note, Instant createdAt) {}
+  public record JobApplication(@Id Long id, Long jobId, String name, String phone, String email,
+                               String resumeUrl, String resumeFilename, String resumeContentType,
+                               byte[] resumeData, String note, Instant createdAt) {}
 
   @Table("leads")
   public record Lead(@Id Long id, String name, String phone, String email, String type, String message, Instant createdAt) {}
@@ -59,4 +61,10 @@ public class Entities {
 
   @Table("career_perks")
   public record CareerPerk(@Id Long id, String icon, String label, String text, Integer sortOrder, Boolean active) {}
+
+  @Table("about_milestones")
+  public record AboutMilestone(@Id Long id, String yearLabel, String title, String body, Integer sortOrder, Boolean active) {}
+
+  @Table("about_brands")
+  public record AboutBrand(@Id Long id, String name, Integer sortOrder, Boolean active) {}
 }

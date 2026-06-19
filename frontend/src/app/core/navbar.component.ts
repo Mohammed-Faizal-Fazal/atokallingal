@@ -1,14 +1,14 @@
 import { Component, AfterViewInit, ElementRef, ViewChild, signal, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NgClass } from '@angular/common';
-import { LucideBike, LucideBriefcaseBusiness, LucideHome, LucideImages, LucideMapPin, LucideWrench } from '@lucide/angular';
+import { LucideBike, LucideBriefcaseBusiness, LucideBuilding2, LucideHome, LucideImages, LucideMapPin, LucideWrench } from '@lucide/angular';
 import gsap from 'gsap';
 import { BrandLogoComponent } from '../shared/brand-logo.component';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, NgClass, BrandLogoComponent, LucideBike, LucideBriefcaseBusiness, LucideHome, LucideImages, LucideMapPin, LucideWrench],
+  imports: [RouterLink, RouterLinkActive, NgClass, BrandLogoComponent, LucideBike, LucideBriefcaseBusiness, LucideBuilding2, LucideHome, LucideImages, LucideMapPin, LucideWrench],
   template: `
   <header #header class="fixed top-0 z-50 w-full -translate-y-4 opacity-0">
     <nav class="nav-shell relative mx-3 mt-3 flex max-w-7xl items-center justify-between overflow-hidden rounded-2xl border border-kgreen-300/20 px-3 py-2 text-kblue-50 transition-all duration-300 sm:mx-auto sm:rounded-full sm:px-4"
@@ -30,6 +30,7 @@ import { BrandLogoComponent } from '../shared/brand-logo.component';
               @case ('gallery') { <svg lucideImages class="h-4 w-4"></svg> }
               @case ('showrooms') { <svg lucideMapPin class="h-4 w-4"></svg> }
               @case ('careers') { <svg lucideBriefcaseBusiness class="h-4 w-4"></svg> }
+              @case ('about') { <svg lucideBuilding2 class="h-4 w-4"></svg> }
             }
             {{ l.label }}
           </a></li>
@@ -60,6 +61,7 @@ import { BrandLogoComponent } from '../shared/brand-logo.component';
               @case ('gallery') { <svg lucideImages class="h-4 w-4"></svg> }
               @case ('showrooms') { <svg lucideMapPin class="h-4 w-4"></svg> }
               @case ('careers') { <svg lucideBriefcaseBusiness class="h-4 w-4"></svg> }
+              @case ('about') { <svg lucideBuilding2 class="h-4 w-4"></svg> }
             }
             {{ l.label }}
           </a>
@@ -138,6 +140,7 @@ export class NavbarComponent implements AfterViewInit {
   scrolled = signal(false);
   links = [
     { path: '/', label: 'Home', icon: 'home' },
+    { path: '/about', label: 'About', icon: 'about' },
     { path: '/products', label: 'Products', icon: 'products' },
     { path: '/services', label: 'Services', icon: 'services' },
     { path: '/gallery', label: 'Gallery', icon: 'gallery' },

@@ -5,6 +5,7 @@ import { Observable, finalize } from 'rxjs';
 import {
   LucideBriefcaseBusiness,
   LucideCalendarClock,
+  LucideDownload,
   LucideFilter,
   LucideImages,
   LucideLayoutDashboard,
@@ -29,7 +30,7 @@ import { AdminApiService, CacheInfo, Reports } from '../../shared/admin-api.serv
 import {
   ApiService, Showroom, GalleryImage, ServiceItem, JobOpening, Lead, JobApplication, Testimonial, Faq,
   PageHero, BrandItem, ProductCategory, HomeOffer, HomeHighlight, HomeVideo,
-  ServicePanel, ServicePromise, CareerPerk
+  ServicePanel, ServicePromise, CareerPerk, AboutMilestone, AboutBrand
 } from '../../shared/api.service';
 import { ToastService } from '../../shared/toast.service';
 import { SettingsService } from '../../shared/settings.service';
@@ -54,6 +55,7 @@ function nonBlank(control: AbstractControl): ValidationErrors | null {
     DatePipe,
     LucideBriefcaseBusiness,
     LucideCalendarClock,
+    LucideDownload,
     LucideFilter,
     LucideImages,
     LucideLayoutDashboard,
@@ -311,6 +313,9 @@ function nonBlank(control: AbstractControl): ValidationErrors | null {
                 </div>
                 <p class="mt-5 rounded-lg bg-kteal-50 p-4 text-sm leading-6 text-ink/70">{{ a.note || 'No note provided.' }}</p>
                 <div class="mt-5 flex flex-wrap gap-3">
+                  @if (a.resumeFilename) {
+                    <button (click)="downloadCv(a)" class="admin-action bg-kteal-600 text-white"><svg lucideDownload class="h-4 w-4"></svg>Download CV</button>
+                  }
                   <a [href]="callLink(a.phone)" class="admin-action bg-kblue-700 text-white"><svg lucidePhone class="h-4 w-4"></svg>Call</a>
                   <a [href]="whatsAppApplicationLink(a)" target="_blank" rel="noopener" class="admin-action bg-[#25D366] text-white"><app-whatsapp-icon className="h-4 w-4"/>WhatsApp</a>
                   <a [href]="emailApplicationLink(a)" class="admin-action bg-white text-kblue-800 ring-1 ring-kblue-100"><svg lucideMail class="h-4 w-4"></svg>Email</a>
@@ -618,6 +623,74 @@ function nonBlank(control: AbstractControl): ValidationErrors | null {
                     <div class="mt-4 flex flex-wrap gap-2">
                       <button (click)="editBrand(b)" class="admin-action bg-kteal-50 text-kteal-700 ring-1 ring-kteal-100"><svg lucideSave class="h-4 w-4"></svg>Edit</button>
                       <button (click)="deleteBrand(b)" class="icon-action bg-red-50 text-red-600"><svg lucideTrash2 class="h-4 w-4"></svg></button>
+                    </div>
+                  </article>
+                }
+              </div>
+            </section>
+
+            <section class="content-block">
+              <form [formGroup]="milestoneForm" (ngSubmit)="saveMilestone()" class="content-form">
+                <h3 class="content-title">{{ editingMilestone() ? 'Edit milestone' : 'Add legacy milestone' }}</h3>
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <input formControlName="yearLabel" placeholder="Year label (e.g. 1992, 25+ years)" class="adm-in"/>
+                  <input formControlName="title" placeholder="Title *" class="adm-in"/>
+                </div>
+                <textarea formControlName="body" rows="3" placeholder="Description" class="adm-in"></textarea>
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <input formControlName="sortOrder" type="number" placeholder="Sort order" class="adm-in"/>
+                  <label class="admin-toggle"><input type="checkbox" formControlName="active"/> Active</label>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button type="submit" [disabled]="milestoneForm.invalid" class="btn-primary disabled:opacity-50"><svg lucideSave class="mr-2 h-4 w-4"></svg>{{ editingMilestone() ? 'Update milestone' : 'Save milestone' }}</button>
+                  @if (editingMilestone()) { <button type="button" (click)="cancelMilestone()" class="btn-outline">Cancel</button> }
+                </div>
+              </form>
+              <div class="content-list">
+                @for (m of aboutMilestones(); track m.id ?? m.title) {
+                  <article class="content-card" [class.ring-2]="editingMilestone() === m.id" [class.ring-kteal-400]="editingMilestone() === m.id">
+                    <div class="flex items-start justify-between gap-3">
+                      <div>
+                        @if (m.yearLabel) { <p class="eyebrow">{{ m.yearLabel }}</p> }
+                        <h4 class="font-display text-lg font-bold text-kblue-900">{{ m.title }}</h4>
+                      </div>
+                      <span class="rounded-full px-2.5 py-1 text-xs font-bold" [class.bg-kgreen-100]="m.active !== false" [class.text-kgreen-700]="m.active !== false" [class.bg-red-50]="m.active === false" [class.text-red-600]="m.active === false">{{ m.active === false ? 'Hidden' : 'Live' }}</span>
+                    </div>
+                    <p class="mt-1 line-clamp-2 text-sm text-ink/60">{{ m.body }}</p>
+                    <p class="mt-1 text-xs text-ink/50">Order #{{ m.sortOrder ?? 0 }}</p>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                      <button (click)="editMilestone(m)" class="admin-action bg-kteal-50 text-kteal-700 ring-1 ring-kteal-100"><svg lucideSave class="h-4 w-4"></svg>Edit</button>
+                      <button (click)="deleteMilestone(m)" class="icon-action bg-red-50 text-red-600"><svg lucideTrash2 class="h-4 w-4"></svg></button>
+                    </div>
+                  </article>
+                }
+              </div>
+            </section>
+
+            <section class="content-block">
+              <form [formGroup]="aboutBrandForm" (ngSubmit)="saveAboutBrand()" class="content-form">
+                <h3 class="content-title">{{ editingAboutBrand() ? 'Edit About brand' : 'Add About-page brand' }}</h3>
+                <input formControlName="name" placeholder="Partner brand name *" class="adm-in"/>
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <input formControlName="sortOrder" type="number" placeholder="Sort order" class="adm-in"/>
+                  <label class="admin-toggle"><input type="checkbox" formControlName="active"/> Active</label>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button type="submit" [disabled]="aboutBrandForm.invalid" class="btn-primary disabled:opacity-50"><svg lucideSave class="mr-2 h-4 w-4"></svg>{{ editingAboutBrand() ? 'Update brand' : 'Save brand' }}</button>
+                  @if (editingAboutBrand()) { <button type="button" (click)="cancelAboutBrand()" class="btn-outline">Cancel</button> }
+                </div>
+              </form>
+              <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                @for (b of aboutBrandsList(); track b.id ?? b.name) {
+                  <article class="content-card">
+                    <div class="flex items-start justify-between gap-3">
+                      <p class="font-display text-lg font-bold text-kblue-900">{{ b.name }}</p>
+                      <span class="rounded-full px-2.5 py-1 text-xs font-bold" [class.bg-kgreen-100]="b.active !== false" [class.text-kgreen-700]="b.active !== false" [class.bg-red-50]="b.active === false" [class.text-red-600]="b.active === false">{{ b.active === false ? 'Hidden' : 'Live' }}</span>
+                    </div>
+                    <p class="mt-1 text-xs text-ink/50">Order #{{ b.sortOrder ?? 0 }}</p>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                      <button (click)="editAboutBrand(b)" class="admin-action bg-kteal-50 text-kteal-700 ring-1 ring-kteal-100"><svg lucideSave class="h-4 w-4"></svg>Edit</button>
+                      <button (click)="deleteAboutBrand(b)" class="icon-action bg-red-50 text-red-600"><svg lucideTrash2 class="h-4 w-4"></svg></button>
                     </div>
                   </article>
                 }
@@ -1091,6 +1164,8 @@ export class AdminComponent implements OnInit {
   servicePanels = signal<ServicePanel[]>([]);
   servicePromises = signal<ServicePromise[]>([]);
   careerPerks = signal<CareerPerk[]>([]);
+  aboutMilestones = signal<AboutMilestone[]>([]);
+  aboutBrandsList = signal<AboutBrand[]>([]);
   cacheInfo = signal<CacheInfo | null>(null);
 
   // edit mode — holds the id of the record being edited (null = creating new)
@@ -1109,6 +1184,8 @@ export class AdminComponent implements OnInit {
   editingServicePanel = signal<number | null>(null);
   editingServicePromise = signal<number | null>(null);
   editingCareerPerk = signal<number | null>(null);
+  editingMilestone = signal<number | null>(null);
+  editingAboutBrand = signal<number | null>(null);
   // Preserve the original creation timestamp across edits — the backend resets it
   // to now() whenever an update arrives with a null createdAt, so we round-trip it.
   private editingGalleryCreatedAt?: string;
@@ -1132,6 +1209,8 @@ export class AdminComponent implements OnInit {
     imageUrl: [''], videoUrl: [''], chips: ['']
   });
   brandForm = this.fb.nonNullable.group({ name: ['', nonBlank], sortOrder: [0], active: [true] });
+  milestoneForm = this.fb.nonNullable.group({ yearLabel: [''], title: ['', nonBlank], body: [''], sortOrder: [0], active: [true] });
+  aboutBrandForm = this.fb.nonNullable.group({ name: ['', nonBlank], sortOrder: [0], active: [true] });
   productCategoryForm = this.fb.nonNullable.group({
     name: ['', nonBlank], tag: [''], accent: ['#06a154'], icon: ['bike'], imageUrl: [''],
     description: [''], specs: [''], sortOrder: [0], active: [true]
@@ -1320,6 +1399,23 @@ export class AdminComponent implements OnInit {
     return `mailto:${a.email}?subject=${encodeURIComponent('Kallingal job application')}`;
   }
 
+  downloadCv(a: JobApplication) {
+    if (!a.id) return;
+    this.admin.downloadCv(a.id).subscribe({
+      next: blob => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = a.resumeFilename || `cv-${a.id}`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      },
+      error: () => this.toast.error('Could not download CV.')
+    });
+  }
+
   // ---------- showrooms ----------
   editStore(s: Showroom) {
     this.editingStore.set(s.id ?? null);
@@ -1459,6 +1555,8 @@ export class AdminComponent implements OnInit {
     this.loadInto(this.admin.servicePanels(), v => this.servicePanels.set(v));
     this.loadInto(this.admin.servicePromises(), v => this.servicePromises.set(v));
     this.loadInto(this.admin.careerPerks(), v => this.careerPerks.set(v));
+    this.loadInto(this.admin.aboutMilestones(), v => this.aboutMilestones.set(v));
+    this.loadInto(this.admin.aboutBrands(), v => this.aboutBrandsList.set(v));
   }
 
   private afterContentSave(message: string) {
@@ -1507,6 +1605,46 @@ export class AdminComponent implements OnInit {
     if (v.id == null || !await this.ask(`Delete ${v.name}?`)) return;
     this.mutate(this.admin.deleteBrand(v.id),
       () => { if (this.editingBrand() === v.id) this.cancelBrand(); this.afterContentSave('Brand deleted.'); },
+      'Could not delete brand.');
+  }
+
+  editMilestone(v: AboutMilestone) {
+    this.editingMilestone.set(v.id ?? null);
+    this.milestoneForm.setValue({ yearLabel: v.yearLabel || '', title: v.title || '', body: v.body || '', sortOrder: v.sortOrder ?? 0, active: v.active !== false });
+    this.scrollToForm();
+  }
+  cancelMilestone() { this.editingMilestone.set(null); this.milestoneForm.reset({ sortOrder: 0, active: true }); }
+  saveMilestone() {
+    const id = this.editingMilestone();
+    const payload = { ...this.milestoneForm.getRawValue(), ...(id != null ? { id } : {}) } as AboutMilestone;
+    this.mutate(this.admin.saveAboutMilestone(payload),
+      () => { this.cancelMilestone(); this.afterContentSave(id != null ? 'Milestone updated.' : 'Milestone saved.'); },
+      'Could not save milestone.');
+  }
+  async deleteMilestone(v: AboutMilestone) {
+    if (v.id == null || !await this.ask(`Delete "${v.title}"?`)) return;
+    this.mutate(this.admin.deleteAboutMilestone(v.id),
+      () => { if (this.editingMilestone() === v.id) this.cancelMilestone(); this.afterContentSave('Milestone deleted.'); },
+      'Could not delete milestone.');
+  }
+
+  editAboutBrand(v: AboutBrand) {
+    this.editingAboutBrand.set(v.id ?? null);
+    this.aboutBrandForm.setValue({ name: v.name || '', sortOrder: v.sortOrder ?? 0, active: v.active !== false });
+    this.scrollToForm();
+  }
+  cancelAboutBrand() { this.editingAboutBrand.set(null); this.aboutBrandForm.reset({ sortOrder: 0, active: true }); }
+  saveAboutBrand() {
+    const id = this.editingAboutBrand();
+    const payload = { ...this.aboutBrandForm.getRawValue(), ...(id != null ? { id } : {}) } as AboutBrand;
+    this.mutate(this.admin.saveAboutBrand(payload),
+      () => { this.cancelAboutBrand(); this.afterContentSave(id != null ? 'Brand updated.' : 'Brand saved.'); },
+      'Could not save brand.');
+  }
+  async deleteAboutBrand(v: AboutBrand) {
+    if (v.id == null || !await this.ask(`Delete ${v.name}?`)) return;
+    this.mutate(this.admin.deleteAboutBrand(v.id),
+      () => { if (this.editingAboutBrand() === v.id) this.cancelAboutBrand(); this.afterContentSave('Brand deleted.'); },
       'Could not delete brand.');
   }
 

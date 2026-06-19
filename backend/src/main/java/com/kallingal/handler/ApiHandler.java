@@ -20,6 +20,8 @@ import com.kallingal.repository.HomeVideoRepo;
 import com.kallingal.repository.ServicePanelRepo;
 import com.kallingal.repository.ServicePromiseRepo;
 import com.kallingal.repository.CareerPerkRepo;
+import com.kallingal.repository.AboutMilestoneRepo;
+import com.kallingal.repository.AboutBrandRepo;
 import com.kallingal.domain.Entities.Setting;
 import org.springframework.r2dbc.core.DatabaseClient;
 import java.util.Map;
@@ -29,6 +31,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import org.springframework.web.server.ServerWebInputException;
+import org.springframework.http.MediaType;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -56,18 +60,25 @@ public class ApiHandler {
   private final ServicePanelRepo servicePanels;
   private final ServicePromiseRepo servicePromises;
   private final CareerPerkRepo careerPerks;
+  private final AboutMilestoneRepo aboutMilestones;
+  private final AboutBrandRepo aboutBrands;
   private final DatabaseClient db;
   private final ContentCache cache;
+
+  // Decoded-size cap for an uploaded CV — matches the 5 MB the UI advertises and
+  // enforces. Well under spring.codec.max-in-memory-size and nginx client_max_body_size.
+  private static final int MAX_CV_BYTES = 5 * 1024 * 1024;
 
   public ApiHandler(ShowroomRepo s, GalleryRepo g, ServiceRepo sv, JobRepo j, ApplicationRepo a, LeadRepo l,
                     SettingRepo st, TestimonialRepo tm, FaqRepo fq, PageHeroRepo ph, BrandItemRepo bi,
                     ProductCategoryRepo pc, HomeOfferRepo ho, HomeHighlightRepo hh, HomeVideoRepo hv,
-                    ServicePanelRepo sp, ServicePromiseRepo spr, CareerPerkRepo cp, DatabaseClient db,
-                    ContentCache cache) {
+                    ServicePanelRepo sp, ServicePromiseRepo spr, CareerPerkRepo cp, AboutMilestoneRepo am,
+                    AboutBrandRepo abr, DatabaseClient db, ContentCache cache) {
     this.showrooms = s; this.gallery = g; this.services = sv; this.jobs = j; this.applications = a; this.leads = l;
     this.settings = st; this.testimonials = tm; this.faqs = fq; this.pageHeroes = ph; this.brands = bi;
     this.productCategories = pc; this.homeOffers = ho; this.homeHighlights = hh; this.homeVideos = hv;
-    this.servicePanels = sp; this.servicePromises = spr; this.careerPerks = cp; this.db = db; this.cache = cache;
+    this.servicePanels = sp; this.servicePromises = spr; this.careerPerks = cp; this.aboutMilestones = am;
+    this.aboutBrands = abr; this.db = db; this.cache = cache;
   }
 
   // ---------- public ----------
@@ -118,8 +129,15 @@ public class ApiHandler {
         if (blank(a.name()) || blank(a.phone()) || blank(a.email())) {
           return badRequest().bodyValue(Map.of("error", "name, phone and email are required"));
         }
-        return applications.save(new JobApplication(null, a.jobId(), a.name().trim(), a.phone().trim(), a.email().trim(), a.resumeUrl(), a.note(), Instant.now()))
-          .flatMap(saved -> status(201).bodyValue(saved));
+        if (a.resumeData() != null && a.resumeData().length > MAX_CV_BYTES) {
+          return badRequest().bodyValue(Map.of("error", "CV file is too large (max 5 MB)"));
+        }
+        JobApplication toSave = new JobApplication(null, a.jobId(), a.name().trim(), a.phone().trim(),
+          a.email().trim(), a.resumeUrl(), a.resumeFilename(), a.resumeContentType(), a.resumeData(),
+          a.note(), Instant.now());
+        // Don't echo the (potentially multi-MB) CV bytes back to the browser; the client only needs the id.
+        return applications.save(toSave)
+          .flatMap(saved -> status(201).bodyValue(Map.of("id", saved.id(), "status", "received")));
       });
   }
 
@@ -155,7 +173,62 @@ public class ApiHandler {
   public Mono<ServerResponse> deleteJob(ServerRequest r) {
     return jobs.deleteById(Long.valueOf(r.pathVariable("id"))).then(clearCache()).then(noContent().build());
   }
-  public Mono<ServerResponse> listApplications(ServerRequest r) { return ok().body(applications.findAll(), JobApplication.class); }
+  public Mono<ServerResponse> listApplications(ServerRequest r) {
+    // Project every column EXCEPT resume_data so the admin list stays light — the CV
+    // bytes are streamed on demand by downloadCv. Keys are camelCased to match the
+    // JobApplication TS interface; a non-null resumeFilename tells the UI a CV exists.
+    Flux<Map<String, Object>> rows = db.sql(
+        "SELECT id, job_id, name, phone, email, note, resume_url, resume_filename, created_at " +
+        "FROM job_applications ORDER BY id")
+      .fetch().all()
+      .map(row -> {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", row.get("id"));
+        m.put("jobId", row.get("job_id"));
+        m.put("name", row.get("name"));
+        m.put("phone", row.get("phone"));
+        m.put("email", row.get("email"));
+        m.put("note", row.get("note"));
+        m.put("resumeUrl", row.get("resume_url"));
+        m.put("resumeFilename", row.get("resume_filename"));
+        m.put("createdAt", row.get("created_at"));
+        return m;
+      });
+    return ok().body(rows, new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {});
+  }
+
+  public Mono<ServerResponse> downloadCv(ServerRequest r) {
+    long id = Long.parseLong(r.pathVariable("id"));
+    return db.sql("SELECT resume_filename, resume_content_type, resume_data FROM job_applications WHERE id = :id")
+      .bind("id", id)
+      .map(row -> new CvFile(
+        row.get("resume_data", byte[].class),
+        row.get("resume_filename", String.class),
+        row.get("resume_content_type", String.class)))
+      .one()
+      .flatMap(cv -> {
+        if (cv.data() == null) return notFound().build();
+        MediaType type;
+        try {
+          type = MediaType.parseMediaType(cv.contentType() == null ? "application/octet-stream" : cv.contentType());
+        } catch (Exception e) {
+          type = MediaType.APPLICATION_OCTET_STREAM;
+        }
+        String filename = (cv.filename() == null ? "cv-" + id : cv.filename()).replaceAll("[\"\\r\\n]", "");
+        // RFC 6266 / 5987 encoding so non-ASCII names (accents, Malayalam, ...) survive
+        // the (ISO-8859-1-only) HTTP header instead of becoming mojibake.
+        String disposition = org.springframework.http.ContentDisposition.attachment()
+          .filename(filename, java.nio.charset.StandardCharsets.UTF_8).build().toString();
+        return ok()
+          .contentType(type)
+          .header("Content-Disposition", disposition)
+          .bodyValue(cv.data());
+      })
+      .switchIfEmpty(notFound().build());
+  }
+
+  private record CvFile(byte[] data, String filename, String contentType) {}
+
   public Mono<ServerResponse> listLeads(ServerRequest r)        { return ok().body(leads.findAll(), Lead.class); }
 
   public Mono<ServerResponse> listPageHeroes(ServerRequest r) { return ok().body(pageHeroes.findAll(), PageHero.class); }
@@ -244,6 +317,30 @@ public class ApiHandler {
   }
   public Mono<ServerResponse> deleteCareerPerk(ServerRequest r) {
     return careerPerks.deleteById(Long.valueOf(r.pathVariable("id"))).then(clearCache()).then(noContent().build());
+  }
+
+  // ---------- about / legacy timeline ----------
+  public Mono<ServerResponse> listAboutMilestones(ServerRequest r) { return ok().body(cache.flux("aboutMilestones", AboutMilestone.class, aboutMilestones::findByActiveTrueOrderBySortOrderAsc), AboutMilestone.class); }
+  public Mono<ServerResponse> listAdminAboutMilestones(ServerRequest r) { return ok().body(aboutMilestones.findAll(), AboutMilestone.class); }
+  public Mono<ServerResponse> saveAboutMilestone(ServerRequest r) {
+    return r.bodyToMono(AboutMilestone.class)
+      .map(m -> new AboutMilestone(m.id(), m.yearLabel(), m.title(), m.body(), m.sortOrder() == null ? 0 : m.sortOrder(), m.active() == null || m.active()))
+      .flatMap(aboutMilestones::save).flatMap(this::createdCached);
+  }
+  public Mono<ServerResponse> deleteAboutMilestone(ServerRequest r) {
+    return aboutMilestones.deleteById(Long.valueOf(r.pathVariable("id"))).then(clearCache()).then(noContent().build());
+  }
+
+  // ---------- about / partner brands ----------
+  public Mono<ServerResponse> listAboutBrands(ServerRequest r) { return ok().body(cache.flux("aboutBrands", AboutBrand.class, aboutBrands::findByActiveTrueOrderBySortOrderAsc), AboutBrand.class); }
+  public Mono<ServerResponse> listAdminAboutBrands(ServerRequest r) { return ok().body(aboutBrands.findAll(), AboutBrand.class); }
+  public Mono<ServerResponse> saveAboutBrand(ServerRequest r) {
+    return r.bodyToMono(AboutBrand.class)
+      .map(b -> new AboutBrand(b.id(), b.name(), b.sortOrder() == null ? 0 : b.sortOrder(), b.active() == null || b.active()))
+      .flatMap(aboutBrands::save).flatMap(this::createdCached);
+  }
+  public Mono<ServerResponse> deleteAboutBrand(ServerRequest r) {
+    return aboutBrands.deleteById(Long.valueOf(r.pathVariable("id"))).then(clearCache()).then(noContent().build());
   }
 
   public Mono<ServerResponse> cacheInfo(ServerRequest r) { return ok().bodyValue(cache.info()); }

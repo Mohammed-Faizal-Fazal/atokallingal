@@ -1,6 +1,10 @@
 spring:
   application:
     name: kallingal-api
+  codec:
+    # Allow the base64-encoded CV in a job application POST to buffer in memory.
+    # A 5 MB file is ~6.7 MB base64; default is only 256 KB.
+    max-in-memory-size: 12MB
   r2dbc:
     url: ${SPRING_R2DBC_URL:r2dbc:postgresql://localhost:5432/kallingal}
     username: ${SPRING_R2DBC_USERNAME:kallingal}
