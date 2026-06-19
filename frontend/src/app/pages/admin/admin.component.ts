@@ -672,7 +672,7 @@ function nonBlank(control: AbstractControl): ValidationErrors | null {
                 <h3 class="content-title">{{ editingAboutBrand() ? 'Edit About brand' : 'Add About-page brand' }}</h3>
                 <input formControlName="name" placeholder="Partner brand name *" class="adm-in"/>
                 <input formControlName="logoUrl" placeholder="Logo URL or path (optional)" class="adm-in"/>
-                <p class="-mt-1 text-xs text-ink/50">Leave blank to auto-use <code>assets/brand/logos/&lt;name&gt;.png</code>; falls back to the brand name if no image is found.</p>
+                <p class="-mt-1 text-xs text-ink/50">Leave blank to auto-use the brand's logo from the online CDN; set a custom image URL (or <code>assets/...</code> path) to override. Falls back to the brand name if no logo loads.</p>
                 <div class="grid gap-3 sm:grid-cols-2">
                   <input formControlName="sortOrder" type="number" placeholder="Sort order" class="adm-in"/>
                   <label class="admin-toggle"><input type="checkbox" formControlName="active"/> Active</label>

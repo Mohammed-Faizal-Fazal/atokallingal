@@ -103,7 +103,7 @@ import { StatsBandComponent } from '../../shared/stats-band.component';
       <div class="ab-brands mt-12">
         @for (b of brands(); track b.id ?? b.name; let i = $index) {
           <div appReveal [revealDelay]="(i % 8) * 0.03" class="ab-brand" [title]="b.name">
-            @if (!logoFailed.has(b.name)) {
+            @if (logoSrc(b) && !logoFailed.has(b.name)) {
               <img [src]="logoSrc(b)" [alt]="b.name + ' logo'" class="ab-brand-logo"
                    loading="lazy" decoding="async" (error)="onLogoError(b.name)"/>
             } @else {
@@ -379,10 +379,27 @@ export class AboutComponent implements OnInit {
 
   /** Brand names whose logo image failed to load — those fall back to a wordmark tile. */
   logoFailed = new Set<string>();
-  /** Admin-set logoUrl if present, else the convention path assets/brand/logos/<slug>.png. */
-  logoSrc(b: AboutBrand) {
+
+  // Verified partner-brand domains -> served as logo marks from Google's favicon
+  // CDN (no API key). Only brands whose mark was confirmed to resolve are listed;
+  // anything not here (or that fails at runtime) falls back to a wordmark tile.
+  private readonly brandDomains: Record<string, string> = {
+    'tata': 'tatamotors.com', 'chetak': 'chetak.com', 'bajaj': 'bajajauto.com',
+    'motul': 'motul.com', 'skf': 'skf.com', 'hella': 'hella.com',
+    'motherson': 'motherson.com', 'wurth': 'wurth.com', 'ucal': 'ucalfuel.com',
+    'hl-mando': 'hlmando.com', 'anand': 'anandgroupindia.com', 'acey': 'acey.in',
+    'loctite': 'loctiteproducts.com', 'isk': 'iskbearings.com', 'rmp-bearings': 'rmpbearings.com',
+    'aerostar-helmets': 'aerostarhelmets.com', 'napino': 'napino.com', 'did': 'didweb.com',
+    'ifb': 'ifbindustries.com', 'arb-bearings': 'arb-bearings.com', 'sankar-np': 'sankarnp.com',
+    'pix': 'pixtrans.com',
+  };
+
+  /** Admin-set logoUrl wins; else the brand's CDN logo mark; else '' (wordmark tile). */
+  logoSrc(b: AboutBrand): string {
     const custom = (b.logoUrl || '').trim();
-    return custom || `assets/brand/logos/${this.slug(b.name)}.png`;
+    if (custom) return custom;
+    const domain = this.brandDomains[this.slug(b.name)];
+    return domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=128` : '';
   }
   onLogoError(name: string) { this.logoFailed.add(name); }
   private slug(s: string) {
