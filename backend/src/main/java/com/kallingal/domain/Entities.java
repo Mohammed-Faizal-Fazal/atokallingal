@@ -66,5 +66,5 @@ public class Entities {
   public record AboutMilestone(@Id Long id, String yearLabel, String title, String body, Integer sortOrder, Boolean active) {}
 
   @Table("about_brands")
-  public record AboutBrand(@Id Long id, String name, Integer sortOrder, Boolean active) {}
+  public record AboutBrand(@Id Long id, String name, String logoUrl, Integer sortOrder, Boolean active) {}
 }

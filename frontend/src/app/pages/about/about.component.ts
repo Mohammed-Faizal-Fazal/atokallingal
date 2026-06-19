@@ -102,7 +102,14 @@ import { StatsBandComponent } from '../../shared/stats-band.component';
     @if (brands().length) {
       <div class="ab-brands mt-12">
         @for (b of brands(); track b.id ?? b.name; let i = $index) {
-          <span appReveal [revealDelay]="(i % 8) * 0.03" class="ab-brand">{{ b.name }}</span>
+          <div appReveal [revealDelay]="(i % 8) * 0.03" class="ab-brand" [title]="b.name">
+            @if (!logoFailed.has(b.name)) {
+              <img [src]="logoSrc(b)" [alt]="b.name + ' logo'" class="ab-brand-logo"
+                   loading="lazy" decoding="async" (error)="onLogoError(b.name)"/>
+            } @else {
+              <span class="ab-brand-word">{{ b.name }}</span>
+            }
+          </div>
         }
       </div>
     } @else {
@@ -127,8 +134,73 @@ import { StatsBandComponent } from '../../shared/stats-band.component';
         </div>
       </div>
       <div appReveal [revealDelay]="0.12" class="ab-map">
-        <iframe src="https://maps.google.com/maps?q=8.5241,76.9366&z=11&output=embed"
-          class="ab-map-frame" loading="lazy" title="Kallingal Group - Trivandrum"></iframe>
+        <div class="ab-map-stage">
+          <svg class="ab-map-svg" viewBox="0 0 640 480" preserveAspectRatio="xMidYMid slice" role="img"
+               aria-label="Stylised map of Kallingal's showroom network across the Trivandrum district">
+            <defs>
+              <radialGradient id="abGlow" cx="46%" cy="40%" r="72%">
+                <stop offset="0%" stop-color="rgba(6,161,84,0.20)"/>
+                <stop offset="55%" stop-color="rgba(30,112,173,0.10)"/>
+                <stop offset="100%" stop-color="rgba(7,6,4,0)"/>
+              </radialGradient>
+              <linearGradient id="abRoute" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#35c985"/>
+                <stop offset="100%" stop-color="#1e70ad"/>
+              </linearGradient>
+              <pattern id="abGrid" width="38" height="38" patternUnits="userSpaceOnUse">
+                <path d="M38 0H0V38" fill="none" stroke="rgba(255,255,255,0.045)" stroke-width="1"/>
+              </pattern>
+            </defs>
+
+            <rect width="640" height="480" fill="#0a0f0d"/>
+            <rect width="640" height="480" fill="url(#abGrid)"/>
+            <rect width="640" height="480" fill="url(#abGlow)"/>
+
+            <!-- suggested coastline to the south-west -->
+            <path d="M-20 372 C 110 344, 190 430, 360 478 L -20 520 Z" fill="rgba(30,112,173,0.10)"/>
+            <path d="M-20 372 C 110 344, 190 430, 360 478" fill="none" stroke="rgba(124,196,240,0.35)"
+                  stroke-width="2" stroke-dasharray="2 8" stroke-linecap="round"/>
+
+            <!-- network routes radiating from the central hub -->
+            <g class="ab-routes" stroke="url(#abRoute)" stroke-width="1.6" fill="none" stroke-linecap="round">
+              <path d="M330 250 L175 110"/>
+              <path d="M330 250 L475 125"/>
+              <path d="M330 250 L560 245"/>
+              <path d="M330 250 L495 360"/>
+              <path d="M330 250 L250 385"/>
+              <path d="M330 250 L150 305"/>
+              <path d="M330 250 L95 205"/>
+            </g>
+
+            <!-- showroom pins -->
+            <g class="ab-pins">
+              <circle class="ab-halo" cx="330" cy="250" r="11"/>
+              <circle class="ab-core ab-core-hub" cx="330" cy="250" r="7"/>
+              <circle class="ab-halo" cx="475" cy="125" r="8"/>
+              <circle class="ab-core" cx="475" cy="125" r="4.5"/>
+              <circle class="ab-halo" cx="175" cy="110" r="8"/>
+              <circle class="ab-core" cx="175" cy="110" r="4.5"/>
+              <circle class="ab-halo" cx="495" cy="360" r="8"/>
+              <circle class="ab-core" cx="495" cy="360" r="4.5"/>
+              <circle class="ab-halo" cx="150" cy="305" r="8"/>
+              <circle class="ab-core" cx="150" cy="305" r="4.5"/>
+              <circle class="ab-core ab-core-sm" cx="250" cy="385" r="3.5"/>
+              <circle class="ab-core ab-core-sm" cx="560" cy="245" r="3.5"/>
+              <circle class="ab-core ab-core-sm" cx="95" cy="205" r="3.5"/>
+            </g>
+
+            <!-- town labels -->
+            <g class="ab-map-labels">
+              <text x="330" y="231" text-anchor="middle">Thiruvananthapuram</text>
+              <text x="475" y="108" text-anchor="middle">Nedumangad</text>
+              <text x="175" y="93" text-anchor="middle">Attingal</text>
+              <text x="495" y="343" text-anchor="middle">Neyyattinkara</text>
+              <text x="150" y="288" text-anchor="middle">Kazhakkoottam</text>
+              <text x="250" y="406" text-anchor="middle">Balaramapuram</text>
+            </g>
+          </svg>
+          <span class="ab-map-badge"><span class="ab-map-badge-dot"></span>19 showrooms across Trivandrum</span>
+        </div>
       </div>
     </div>
   </div>
@@ -199,23 +271,31 @@ import { StatsBandComponent } from '../../shared/stats-band.component';
     .ab-mile-title { margin-top: .7rem; font-size: 1.3rem; color: #fbf7ec; }
     .ab-mile-body { margin-top: .5rem; font-size: .94rem; line-height: 1.75; color: rgba(244,241,234,0.66); }
 
-    /* brands — typographic grid */
+    /* brands — logo wall on warm-white tiles so colour marks read clearly */
     .ab-brands {
-      display: grid; gap: 1px; background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.08); border-radius: 1.1rem; overflow: hidden;
+      display: grid; gap: 1rem;
       grid-template-columns: repeat(2, 1fr);
     }
     @media (min-width: 640px) { .ab-brands { grid-template-columns: repeat(3, 1fr); } }
     @media (min-width: 1024px) { .ab-brands { grid-template-columns: repeat(4, 1fr); } }
     .ab-brand {
       display: flex; align-items: center; justify-content: center; text-align: center;
-      min-height: 5.2rem; padding: 1rem .8rem;
-      background: rgba(10,12,11,0.7);
-      font-family: "Sora", sans-serif; font-size: .98rem; font-weight: 800; letter-spacing: .02em;
-      color: rgba(244,241,234,0.78); text-transform: uppercase;
-      transition: color .25s ease, background .25s ease;
+      min-height: 6.4rem; padding: 1.2rem 1rem;
+      border-radius: 1rem;
+      background: linear-gradient(180deg, #ffffff, #f4f1e9);
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 16px 38px rgba(0,0,0,0.28);
+      transition: transform .25s ease, box-shadow .25s ease;
     }
-    .ab-brand:hover { color: #fff; background: rgba(6,161,84,0.14); }
+    .ab-brand:hover { transform: translateY(-4px); box-shadow: 0 24px 52px rgba(0,0,0,0.4); }
+    .ab-brand-logo {
+      max-height: 3rem; max-width: 84%; width: auto; height: auto;
+      object-fit: contain;
+    }
+    .ab-brand-word {
+      font-family: "Sora", sans-serif; font-size: 1rem; font-weight: 800; letter-spacing: .03em;
+      color: #15324a; text-transform: uppercase; line-height: 1.15;
+    }
 
     /* map */
     .ab-map-wrap { display: grid; gap: 2.5rem; align-items: center; }
@@ -231,15 +311,62 @@ import { StatsBandComponent } from '../../shared/stats-band.component';
       border: 1px solid rgba(6,161,84,0.22); border-radius: 1.3rem; padding: .5rem;
       background: rgba(255,255,255,0.04); box-shadow: 0 30px 80px rgba(0,0,0,0.45);
     }
-    .ab-map-frame { display: block; width: 100%; height: 24rem; border: 0; border-radius: 1rem; filter: grayscale(.2) contrast(1.05); }
+    .ab-map-stage {
+      position: relative; border-radius: 1rem; overflow: hidden;
+      aspect-ratio: 4 / 3; min-height: 18rem; background: #0a0f0d;
+    }
+    .ab-map-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    .ab-map-labels text {
+      font-family: "Sora", sans-serif; font-size: 13px; font-weight: 700;
+      letter-spacing: .04em; text-transform: uppercase; fill: rgba(244,241,234,0.82);
+      paint-order: stroke; stroke: rgba(7,6,4,0.85); stroke-width: 3px; stroke-linejoin: round;
+    }
+    .ab-core { fill: #fbf7ec; }
+    .ab-core-hub { fill: #35c985; filter: drop-shadow(0 0 8px rgba(53,201,133,0.85)); }
+    .ab-core-sm { fill: rgba(244,241,234,0.6); }
+    .ab-halo {
+      fill: rgba(53,201,133,0.5); transform-box: fill-box; transform-origin: center;
+      animation: abPinPulse 3s ease-out infinite;
+    }
+    .ab-halo:nth-of-type(3) { animation-delay: .5s; }
+    .ab-halo:nth-of-type(5) { animation-delay: 1s; }
+    .ab-halo:nth-of-type(7) { animation-delay: 1.5s; }
+    .ab-halo:nth-of-type(9) { animation-delay: 2s; }
+    @keyframes abPinPulse {
+      0% { transform: scale(.55); opacity: .7; }
+      70% { transform: scale(2.4); opacity: 0; }
+      100% { opacity: 0; }
+    }
+    .ab-routes path { opacity: .5; stroke-dasharray: 6 6; animation: abRouteFlow 14s linear infinite; }
+    @keyframes abRouteFlow { to { stroke-dashoffset: -240; } }
+    .ab-map-badge {
+      position: absolute; left: .9rem; bottom: .9rem;
+      display: inline-flex; align-items: center; gap: .5rem;
+      border-radius: 999px; border: 1px solid rgba(6,161,84,0.4);
+      background: rgba(7,6,4,0.62); backdrop-filter: blur(6px);
+      padding: .42rem .8rem; font-size: .68rem; font-weight: 800;
+      letter-spacing: .05em; text-transform: uppercase; color: #d8f3e4;
+    }
+    .ab-map-badge-dot {
+      height: .5rem; width: .5rem; border-radius: 999px;
+      background: #35c985; box-shadow: 0 0 10px rgba(53,201,133,0.9);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ab-halo, .ab-routes path { animation: none; }
+      .ab-halo { opacity: .35; }
+    }
 
     @media (max-width: 640px) {
       .ab-h2 { font-size: clamp(1.9rem, 8.5vw, 2.5rem); }
       .ab-intro-head { position: static; }
       .ab-para { font-size: .98rem; line-height: 1.82; }
       .ab-mile-title { font-size: 1.15rem; }
-      .ab-map-frame { height: 18rem; }
-      .ab-brand { min-height: 4.4rem; font-size: .86rem; }
+      .ab-map-stage { min-height: 15rem; }
+      .ab-map-labels { display: none; }
+      .ab-map-badge { font-size: .62rem; left: .65rem; bottom: .65rem; }
+      .ab-brand { min-height: 5rem; padding: .9rem .7rem; }
+      .ab-brand-logo { max-height: 2.4rem; }
+      .ab-brand-word { font-size: .82rem; }
     }
   `]
 })
@@ -249,6 +376,18 @@ export class AboutComponent implements OnInit {
   hero = signal<PageHero | null>(null);
   milestones = signal<AboutMilestone[]>([]);
   brands = signal<AboutBrand[]>([]);
+
+  /** Brand names whose logo image failed to load — those fall back to a wordmark tile. */
+  logoFailed = new Set<string>();
+  /** Admin-set logoUrl if present, else the convention path assets/brand/logos/<slug>.png. */
+  logoSrc(b: AboutBrand) {
+    const custom = (b.logoUrl || '').trim();
+    return custom || `assets/brand/logos/${this.slug(b.name)}.png`;
+  }
+  onLogoError(name: string) { this.logoFailed.add(name); }
+  private slug(s: string) {
+    return (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
 
   // Seeded editorial copy (not admin-managed by design). Sourced from the brand brief.
   intro: string[] = [

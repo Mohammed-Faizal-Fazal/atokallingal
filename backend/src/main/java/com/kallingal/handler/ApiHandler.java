@@ -336,7 +336,7 @@ public class ApiHandler {
   public Mono<ServerResponse> listAdminAboutBrands(ServerRequest r) { return ok().body(aboutBrands.findAll(), AboutBrand.class); }
   public Mono<ServerResponse> saveAboutBrand(ServerRequest r) {
     return r.bodyToMono(AboutBrand.class)
-      .map(b -> new AboutBrand(b.id(), b.name(), b.sortOrder() == null ? 0 : b.sortOrder(), b.active() == null || b.active()))
+      .map(b -> new AboutBrand(b.id(), b.name(), b.logoUrl(), b.sortOrder() == null ? 0 : b.sortOrder(), b.active() == null || b.active()))
       .flatMap(aboutBrands::save).flatMap(this::createdCached);
   }
   public Mono<ServerResponse> deleteAboutBrand(ServerRequest r) {

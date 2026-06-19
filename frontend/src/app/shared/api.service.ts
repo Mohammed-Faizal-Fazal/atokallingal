@@ -24,7 +24,7 @@ export interface ServicePanel { id?: number; eyebrow: string; title: string; tex
 export interface ServicePromise { id?: number; icon: string; label: string; text: string; sortOrder?: number; active?: boolean; }
 export interface CareerPerk { id?: number; icon: string; label: string; text: string; sortOrder?: number; active?: boolean; }
 export interface AboutMilestone { id?: number; yearLabel?: string; title: string; body?: string; sortOrder?: number; active?: boolean; }
-export interface AboutBrand { id?: number; name: string; sortOrder?: number; active?: boolean; }
+export interface AboutBrand { id?: number; name: string; logoUrl?: string; sortOrder?: number; active?: boolean; }
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {

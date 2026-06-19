@@ -671,6 +671,8 @@ function nonBlank(control: AbstractControl): ValidationErrors | null {
               <form [formGroup]="aboutBrandForm" (ngSubmit)="saveAboutBrand()" class="content-form">
                 <h3 class="content-title">{{ editingAboutBrand() ? 'Edit About brand' : 'Add About-page brand' }}</h3>
                 <input formControlName="name" placeholder="Partner brand name *" class="adm-in"/>
+                <input formControlName="logoUrl" placeholder="Logo URL or path (optional)" class="adm-in"/>
+                <p class="-mt-1 text-xs text-ink/50">Leave blank to auto-use <code>assets/brand/logos/&lt;name&gt;.png</code>; falls back to the brand name if no image is found.</p>
                 <div class="grid gap-3 sm:grid-cols-2">
                   <input formControlName="sortOrder" type="number" placeholder="Sort order" class="adm-in"/>
                   <label class="admin-toggle"><input type="checkbox" formControlName="active"/> Active</label>
@@ -1210,7 +1212,7 @@ export class AdminComponent implements OnInit {
   });
   brandForm = this.fb.nonNullable.group({ name: ['', nonBlank], sortOrder: [0], active: [true] });
   milestoneForm = this.fb.nonNullable.group({ yearLabel: [''], title: ['', nonBlank], body: [''], sortOrder: [0], active: [true] });
-  aboutBrandForm = this.fb.nonNullable.group({ name: ['', nonBlank], sortOrder: [0], active: [true] });
+  aboutBrandForm = this.fb.nonNullable.group({ name: ['', nonBlank], logoUrl: [''], sortOrder: [0], active: [true] });
   productCategoryForm = this.fb.nonNullable.group({
     name: ['', nonBlank], tag: [''], accent: ['#06a154'], icon: ['bike'], imageUrl: [''],
     description: [''], specs: [''], sortOrder: [0], active: [true]
@@ -1630,7 +1632,7 @@ export class AdminComponent implements OnInit {
 
   editAboutBrand(v: AboutBrand) {
     this.editingAboutBrand.set(v.id ?? null);
-    this.aboutBrandForm.setValue({ name: v.name || '', sortOrder: v.sortOrder ?? 0, active: v.active !== false });
+    this.aboutBrandForm.setValue({ name: v.name || '', logoUrl: v.logoUrl || '', sortOrder: v.sortOrder ?? 0, active: v.active !== false });
     this.scrollToForm();
   }
   cancelAboutBrand() { this.editingAboutBrand.set(null); this.aboutBrandForm.reset({ sortOrder: 0, active: true }); }
