@@ -72,14 +72,14 @@ import { StatsBandComponent } from '../../shared/stats-band.component';
           </div>
           <div class="cr-job-aside">
             <span class="cr-job-open">Open</span>
-            <button (click)="applying.set(j)" class="btn-primary">Apply <svg lucideArrowRight class="ml-2 h-4 w-4"></svg></button>
+            <button (click)="apply(j)" class="btn-primary">Apply <svg lucideArrowRight class="ml-2 h-4 w-4"></svg></button>
           </div>
         </article>
       }
     </div>
 
     @if (applying(); as job) {
-      <form appReveal [formGroup]="form" (ngSubmit)="submit(job)" class="cr-form mt-12 max-w-2xl space-y-4">
+      <form id="apply-form" appReveal [formGroup]="form" (ngSubmit)="submit(job)" class="cr-form mt-12 max-w-2xl space-y-4 scroll-mt-28">
         <div>
           <p class="eyebrow">Application</p>
           <h3 class="mt-2 font-display text-2xl font-bold text-white">{{ job.title }}</h3>
@@ -276,6 +276,15 @@ export class CareersComponent implements OnInit {
     return (this.hero()?.chips || '').split(',').map(v => v.trim()).filter(Boolean);
   }
   pad(n: number) { return n < 10 ? '0' + n : '' + n; }
+
+  /** Open the application form for a role and scroll it into view. */
+  apply(job: JobOpening) {
+    this.applying.set(job);
+    // The form renders behind an @if — let Angular paint it, then bring it into view.
+    setTimeout(() => {
+      document.getElementById('apply-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 
   onCvSelected(e: Event) {
     const input = e.target as HTMLInputElement;
