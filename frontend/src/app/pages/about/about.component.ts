@@ -106,9 +106,8 @@ import { StatsBandComponent } from '../../shared/stats-band.component';
             @if (logoSrc(b) && !logoFailed.has(b.name)) {
               <img [src]="logoSrc(b)" [alt]="b.name + ' logo'" class="ab-brand-logo"
                    loading="lazy" decoding="async" (error)="onLogoError(b.name)"/>
-            } @else {
-              <span class="ab-brand-word">{{ b.name }}</span>
             }
+            <span class="ab-brand-name">{{ b.name }}</span>
           </div>
         }
       </div>
@@ -271,30 +270,28 @@ import { StatsBandComponent } from '../../shared/stats-band.component';
     .ab-mile-title { margin-top: .7rem; font-size: 1.3rem; color: #fbf7ec; }
     .ab-mile-body { margin-top: .5rem; font-size: .94rem; line-height: 1.75; color: rgba(244,241,234,0.66); }
 
-    /* brands — logo wall on warm-white tiles so colour marks read clearly */
+    /* brands — logo + name tiles on warm-white so colour marks read clearly */
     .ab-brands {
-      display: grid; gap: 1rem;
-      grid-template-columns: repeat(2, 1fr);
+      display: grid; gap: .9rem;
+      grid-template-columns: repeat(3, 1fr);
     }
-    @media (min-width: 640px) { .ab-brands { grid-template-columns: repeat(3, 1fr); } }
-    @media (min-width: 1024px) { .ab-brands { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 640px) { .ab-brands { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 1024px) { .ab-brands { grid-template-columns: repeat(5, 1fr); gap: 1rem; } }
     .ab-brand {
-      display: flex; align-items: center; justify-content: center; text-align: center;
-      min-height: 6.4rem; padding: 1.2rem 1rem;
-      border-radius: 1rem;
-      background: linear-gradient(180deg, #ffffff, #f4f1e9);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: .5rem; text-align: center;
+      min-height: 6rem; padding: 1rem .75rem;
+      border-radius: .9rem;
+      background: linear-gradient(180deg, #ffffff, #f1ede4);
       border: 1px solid rgba(255,255,255,0.10);
-      box-shadow: 0 16px 38px rgba(0,0,0,0.28);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.26);
       transition: transform .25s ease, box-shadow .25s ease;
     }
-    .ab-brand:hover { transform: translateY(-4px); box-shadow: 0 24px 52px rgba(0,0,0,0.4); }
-    .ab-brand-logo {
-      max-height: 3rem; max-width: 84%; width: auto; height: auto;
-      object-fit: contain;
-    }
-    .ab-brand-word {
-      font-family: "Sora", sans-serif; font-size: 1rem; font-weight: 800; letter-spacing: .03em;
-      color: #15324a; text-transform: uppercase; line-height: 1.15;
+    .ab-brand:hover { transform: translateY(-3px); box-shadow: 0 20px 44px rgba(0,0,0,0.4); }
+    .ab-brand-logo { max-height: 2.3rem; max-width: 78%; width: auto; height: auto; object-fit: contain; }
+    .ab-brand-name {
+      font-family: "Sora", sans-serif; font-size: .78rem; font-weight: 800; letter-spacing: .02em;
+      color: #15324a; text-transform: uppercase; line-height: 1.1;
     }
 
     /* map */
@@ -364,9 +361,10 @@ import { StatsBandComponent } from '../../shared/stats-band.component';
       .ab-map-stage { min-height: 15rem; }
       .ab-map-labels { display: none; }
       .ab-map-badge { font-size: .62rem; left: .65rem; bottom: .65rem; }
-      .ab-brand { min-height: 5rem; padding: .9rem .7rem; }
-      .ab-brand-logo { max-height: 2.4rem; }
-      .ab-brand-word { font-size: .82rem; }
+      .ab-brands { gap: .5rem; }
+      .ab-brand { min-height: 4.6rem; padding: .55rem .35rem; gap: .35rem; border-radius: .7rem; }
+      .ab-brand-logo { max-height: 1.5rem; max-width: 85%; }
+      .ab-brand-name { font-size: .6rem; letter-spacing: .01em; }
     }
   `]
 })

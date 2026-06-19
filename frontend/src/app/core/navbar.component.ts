@@ -140,12 +140,12 @@ export class NavbarComponent implements AfterViewInit {
   scrolled = signal(false);
   links = [
     { path: '/', label: 'Home', icon: 'home' },
-    { path: '/about', label: 'About', icon: 'about' },
     { path: '/products', label: 'Products', icon: 'products' },
     { path: '/services', label: 'Services', icon: 'services' },
     { path: '/gallery', label: 'Gallery', icon: 'gallery' },
     { path: '/showrooms', label: 'Showrooms', icon: 'showrooms' },
-    { path: '/careers', label: 'Careers', icon: 'careers' }
+    { path: '/careers', label: 'Careers', icon: 'careers' },
+    { path: '/about', label: 'About', icon: 'about' }
   ];
 
   @HostListener('window:scroll')
